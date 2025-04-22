@@ -1,0 +1,2 @@
+add_subdirectory(enki_minimal)
+add_subdirectory(grouping_at_fixed_point)

@@ -7,13 +7,12 @@ run-sh:
 build:
 	docker run --rm -ti -v ./:/root/simulation tcc-simulation-env cmake src/ -B build
 
-build-test-simulation:
+build-simulation:
 	make build
-	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/test_simulation tcc-simulation-env make
+	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/simulations/$(simulation) tcc-simulation-env make
 
-run-test-simulation:
-	make build-test-simulation
-	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/test_simulation tcc-simulation-env ./simulation
+run: build-simulation
+	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/simulations/$(simulation) tcc-simulation-env ./$(simulation)
 
 clear-build:
 	docker run --rm -ti -v ./:/root/simulation tcc-simulation-env rm -fr build
