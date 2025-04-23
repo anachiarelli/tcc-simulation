@@ -2,12 +2,15 @@
 #include <vector>
 #include <random>
 #include <bitset>
+#include "./Simulator.cpp"
 using namespace std;
+using population_type = vector<bitset<32>>;
+
 class GA {
     private:
         int population_size;
 
-        vector<bitset<32>> createInitialPopulation() {
+        population_type createInitialPopulation() {
             vector<bitset<32>> population;
 
             random_device rand_dev;
@@ -23,6 +26,20 @@ class GA {
             }
             return population;
         }
+        
+        vector<float> evaluate_population(population_type population) {
+            vector<float> evaluation;
+            // TODO
+            Simulator *simulator = new Simulator();
+            simulator->simulate(population);
+            return evaluation;
+        }
+
+        population_type createNextPopulation(population_type current_population, vector<float> evaluation_result) {
+            population_type nextPopulation;
+            // TODO
+            return nextPopulation;
+        }
 
     public:
         GA(int population_size) {
@@ -30,9 +47,12 @@ class GA {
         }
 
         void run() {
-            vector<bitset<32>> population = this->createInitialPopulation();
-            for (auto it = population.begin(); it != population.end(); ++it) {
-                cout << *it << endl;
+            population_type population = this->createInitialPopulation();
+            vector<float> evaluation_result = this->evaluate_population(population);
+
+            for (int i = 0; i < 10; ++i) {
+                population = this->createNextPopulation(population, evaluation_result);
+                evaluation_result = this->evaluate_population(population);
             }
         }
 };
