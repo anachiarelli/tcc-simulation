@@ -47,7 +47,7 @@ class Simulator {
         }
 
         double calculateQuadraticDistance(Enki::Point a, Enki::Point b) {
-            return abs(pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
+            return sqrt(pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
         }
 
     public:
@@ -55,27 +55,36 @@ class Simulator {
             Enki::World world(200, 200);
 
             individual_list robots = this->createIndividuals(population);
-            vector<double> cost;
+            vector<double> fitness;
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
-                cost.push_back(0);
-                std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
+                fitness.push_back(0);
+                // std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
             }
 	
-            // Run for 3 minutes - 4 step/second to match the camera's frame rate (4 fps)
-            for (int i = 0; i < 720; ++i) {
-                world.step(0.25, 5);
+            // Run for 10 minutes - 4 step/second to match the camera's frame rate (4 fps)
+            for (int i = 0; i < 24000; ++i) {
+                world.step(0.1, 5);
 
                 Enki::Point centroid = this->findCentroid(robots);
+                double distances_sum = 0;
 
-                auto c = cost.begin();
                 for (auto it = robots.begin(); it != robots.end(); ++it) {
-                    (*c) += calculateQuadraticDistance((*it)->pos, centroid);  
-                    ++c;
+                    double quadratic_distance = calculateQuadraticDistance((*it)->pos, centroid);
+                    distances_sum += quadratic_distance;
                 }
+
+                auto f = fitness.begin();
+                double distances_avg = distances_sum / robots.size();
+                for (auto it = robots.begin(); it != robots.end(); ++it) {
+                    double quadratic_distance = calculateQuadraticDistance((*it)->pos, centroid);
+                    (*f) += 1 / (distances_avg + quadratic_distance);  
+                    ++f;
+                }
+
             }
 
-            return cost;
+            return fitness;
         }
 };

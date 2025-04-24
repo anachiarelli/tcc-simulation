@@ -1,5 +1,6 @@
 #include <enki/robots/e-puck/EPuck.h>
 #include <bitset>
+using namespace std;
 
 class GeneticEPuck : public Enki::EPuck {
     private:
