@@ -27,15 +27,12 @@ class GA {
             return population;
         }
         
-        vector<float> evaluate_population(population_type population) {
-            vector<float> evaluation;
+        vector<double> evaluate_population(population_type population) {
             Simulator *simulator = new Simulator();
-            simulator->simulate(population);
-            // TODO
-            return evaluation;
+            return simulator->simulate(population);
         }
 
-        population_type createNextPopulation(population_type current_population, vector<float> evaluation_result) {
+        population_type createNextPopulation(population_type current_population, vector<double> evaluation_result) {
             population_type nextPopulation;
             // TODO
             return nextPopulation;
@@ -48,7 +45,7 @@ class GA {
 
         void run() {
             population_type population = this->createInitialPopulation();
-            vector<float> evaluation_result = this->evaluate_population(population);
+            vector<double> evaluation_result = this->evaluate_population(population);
 
             for (int i = 0; i < 10; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);

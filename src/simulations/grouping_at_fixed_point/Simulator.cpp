@@ -31,23 +31,51 @@ class Simulator {
             return individuals;
         }
 
+        Enki::Point findCentroid(individual_list robots) {
+            double sum_x = 0;
+            double sum_y = 0;
+
+            for (auto it = robots.begin(); it != robots.end(); ++it) {
+                sum_x += (*it)->pos.x;
+                sum_y += (*it)->pos.y;
+            }
+
+            return {
+                sum_x / robots.size(),
+                sum_y / robots.size()
+            };
+        }
+
+        double calculateQuadraticDistance(Enki::Point a, Enki::Point b) {
+            return abs(pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
+        }
+
     public:
-        vector<float> simulate(vector<bitset<32>> population) {
+        vector<double> simulate(vector<bitset<32>> population) {
             Enki::World world(200, 200);
-            vector<GeneticEPuck*> robots = this->createIndividuals(population);
+
+            individual_list robots = this->createIndividuals(population);
+            vector<double> cost;
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
+                cost.push_back(0);
                 std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
             }
 	
-            // Run for some times
-            /* for (unsigned i=0; i<160; i++)
-            {
-                // step of 50 ms
-                world.step(0.05);
-                std::cout << "E-puck pos is (" << robot->pos.x << "," << robot->pos.y << ")" << std::endl;
-            } */
-            return {};
+            // Run for 3 minutes - 4 step/second to match the camera's frame rate (4 fps)
+            for (int i = 0; i < 720; ++i) {
+                world.step(0.25, 5);
+
+                Enki::Point centroid = this->findCentroid(robots);
+
+                auto c = cost.begin();
+                for (auto it = robots.begin(); it != robots.end(); ++it) {
+                    (*c) += calculateQuadraticDistance((*it)->pos, centroid);  
+                    ++c;
+                }
+            }
+
+            return cost;
         }
 };
