@@ -29,9 +29,9 @@ class GA {
         
         vector<float> evaluate_population(population_type population) {
             vector<float> evaluation;
-            // TODO
             Simulator *simulator = new Simulator();
             simulator->simulate(population);
+            // TODO
             return evaluation;
         }
 
