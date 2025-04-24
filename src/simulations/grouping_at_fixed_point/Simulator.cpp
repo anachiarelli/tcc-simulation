@@ -1,11 +1,11 @@
 #include <enki/PhysicalEngine.h>
-#include "./ControlledEPuck.cpp"
+#include "./GeneticEPuck.cpp"
 #include <iostream>
 #include <vector>
 #include <random>
 #include <bitset>
 using namespace std;
-using individual_list = vector<ControlledEPuck*>;
+using individual_list = vector<GeneticEPuck*>;
 
 class Simulator {
     private:
@@ -20,7 +20,7 @@ class Simulator {
 
 
             for (auto it = population.begin(); it != population.end(); ++it) {
-                ControlledEPuck *robot = new ControlledEPuck();
+                GeneticEPuck *robot = new GeneticEPuck(*it);
             
                 robot->pos = Enki::Point(position_distr(generator), position_distr(generator));
                 robot->angle = angle_distr(generator);
@@ -34,7 +34,7 @@ class Simulator {
     public:
         vector<float> simulate(vector<bitset<32>> population) {
             Enki::World world(200, 200);
-            vector<ControlledEPuck*> robots = this->createIndividuals(population);
+            vector<GeneticEPuck*> robots = this->createIndividuals(population);
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
