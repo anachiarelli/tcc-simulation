@@ -29,11 +29,14 @@ class GeneticEPuck : public Enki::EPuck {
             this->speed_seeing_robot[1] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8));
             this->speed_seeing_wall[0] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8));
             this->speed_seeing_wall[1] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8));
+
+            //cout << this->speed_seeing_robot[0] << ", " << this->speed_seeing_robot[1] << "wall: " << this->speed_seeing_wall[0] << "," << this->speed_seeing_wall[1] << endl;
         }
 
     public:
         GeneticEPuck(bitset<32> chromosome, unsigned capabilities = CAPABILITY_CAMERA) : EPuck(capabilities) {
             this->chromosome = chromosome;
+            decodeChromosome();
             this->setColor(Enki::Color(0.0, 1.0, 0.0, 1.0));
         }
 

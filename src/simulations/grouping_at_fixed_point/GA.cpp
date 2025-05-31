@@ -37,11 +37,11 @@ class GA {
                 Simulator *simulator = new Simulator();
                 population_type clones;
 
-                for (int i = 0; i < 25; i++) {
+                for (int i = 0; i < 10; i++) {
                     clones.push_back(*p);
                 }
 
-                fitnesses.push_back(10000000/(simulator->simulate(clones)));
+                fitnesses.push_back(100000000/(simulator->simulate(clones)));
             }
 
             return fitnesses;
@@ -93,7 +93,7 @@ class GA {
         }
 
         bitset<32> mutate(bitset<32> child) {
-            double chance = 0.001;
+            double chance = 0.01;
 
             random_device rand_dev;
             mt19937 generator(rand_dev());
@@ -130,31 +130,53 @@ class GA {
         }
 
     public:
+        uint64_t decodeChromosomeSegment(int begin, int length, bitset<32> chromosome) {
+            uint64_t value = 0;
+
+            for (size_t i = begin; i < length; ++i) {
+                if (chromosome[i]) {
+                    value |= (1ULL << (i - begin));
+                }
+            }
+            return value;
+        }
+
+        double transformChromosomeSegmentValueIntoSpeed(uint64_t value) {
+            return (-12.8 + (value * 0.1));
+        }
+
         GA(int population_size) {
             this->population_size = population_size;
         }
 
-        void printFitness(vector<double> evaluation_result) {
-            double best_fitness = 0;
+        void printFitness(vector<double> evaluation_result, population_type population) {
+            int best_index = -1;
             double fitness_sum = 0;
 
-            for (auto it = evaluation_result.begin(); it != evaluation_result.end(); ++it) {
-                fitness_sum += (*it);
-                best_fitness = max(best_fitness, (*it));
+            for (int i = 0; i < population.size(); ++i) {
+                fitness_sum += evaluation_result[i];
+                if (best_index == -1 || evaluation_result[best_index] < evaluation_result[i]) {
+                    best_index = i;
+                }
             }
 
-            cout << best_fitness << " " << (fitness_sum / evaluation_result.size()) << endl;
+            double speed1 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(0, 8, population[best_index]));
+            double speed2 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8, population[best_index]));
+            double speed3 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8, population[best_index]));
+            double speed4 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8, population[best_index]));
+
+            cout << evaluation_result[best_index] << " " << (fitness_sum / evaluation_result.size()) << " (" << speed1 << ", " << speed2 << ") (" << speed3 << ", " << speed4 << ")" << endl;
         }
 
         void run() {
             population_type population = this->createInitialPopulation();
             vector<double> evaluation_result = this->evaluate_population(population);	
-            this->printFitness(evaluation_result);
+            this->printFitness(evaluation_result, population);
 
             for (int i = 0; i < 1000; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);
                 evaluation_result = this->evaluate_population(population);
-                this->printFitness(evaluation_result);
+                this->printFitness(evaluation_result, population);
             }
         }
 };

@@ -65,7 +65,7 @@ class Simulator {
 
     public:
         double simulate(vector<bitset<32>> population) {
-            Enki::World world(450, 450); // maria
+            Enki::World world(100, 100); // maria
             individual_list robots = this->createIndividuals(population);
             double fitness = 0.0;
 

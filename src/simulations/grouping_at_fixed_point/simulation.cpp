@@ -11,6 +11,6 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	GA* algorithm = new GA(25);
+	GA* algorithm = new GA(40);
 	algorithm->run();
 }
