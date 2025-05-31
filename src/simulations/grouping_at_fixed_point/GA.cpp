@@ -26,10 +26,25 @@ class GA {
             }
             return population;
         }
-        
+
+        /**
+         * @return positionally encoded list of fitness where the position of fitness matches the position of the individual in the given population vector
+         */
         vector<double> evaluate_population(population_type population) {
-            Simulator *simulator = new Simulator();
-            return simulator->simulate(population);
+            vector<double> fitnesses;
+
+            for (auto p = population.begin(); p != population.end(); ++p) {
+                Simulator *simulator = new Simulator();
+                population_type clones;
+
+                for (int i = 0; i < 25; i++) {
+                    clones.push_back(*p);
+                }
+
+                fitnesses.push_back(10000000/(simulator->simulate(clones)));
+            }
+
+            return fitnesses;
         }
 
         //TODO: create a type for bitset<32>
@@ -61,7 +76,38 @@ class GA {
             bitset<32> genes_from_parent_1 = parent_1 & left_mask;
             bitset<32> genes_from_parent_2 = parent_2 & right_mask;
 
-            return genes_from_parent_1 | genes_from_parent_2;
+            bitset<32> child_1 = genes_from_parent_1 | genes_from_parent_2;
+            bitset<32> child_2 = genes_from_parent_2 | genes_from_parent_1;
+
+            random_device rand_dev;
+            mt19937 generator(rand_dev());
+            uniform_int_distribution<int> distr(0, 1);
+
+            int pick = distr(generator);
+
+            if (pick == 0) {
+                return child_1;
+            }
+
+            return child_2;
+        }
+
+        bitset<32> mutate(bitset<32> child) {
+            double chance = 0.001;
+
+            random_device rand_dev;
+            mt19937 generator(rand_dev());
+            uniform_real_distribution<double> distr(0, 1);
+            double pick = 0.0;
+
+            for (int i = 0; i < 32; ++i) {
+                pick = distr(generator);
+                if (pick <= chance) {
+                    child.flip(i);
+                }
+            }
+
+            return child;
         }
 
         population_type createNextPopulation(population_type current_population, vector<double> evaluation_result) {
@@ -75,7 +121,9 @@ class GA {
             for (int i = 0; i < current_population.size(); ++i) {
                 bitset<32> parent_1 = this->selectParent(current_population, evaluation_result, evaluation_sum);
                 bitset<32> parent_2 = this->selectParent(current_population, evaluation_result, evaluation_sum);
-                next_population.push_back(this->crossover(parent_1, parent_2));
+                bitset<32> child = this->crossover(parent_1, parent_2);
+
+                next_population.push_back(this->mutate(child));
             }
 
             return next_population;

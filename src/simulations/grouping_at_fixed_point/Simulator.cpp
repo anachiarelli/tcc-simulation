@@ -47,42 +47,39 @@ class Simulator {
         }
 
         double calculateQuadraticDistance(Enki::Point a, Enki::Point b) {
-            return sqrt(pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
+            return (pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
+        }
+
+        double calculateDispersion(individual_list robots) {
+            double normalizer = 1 / 54.76; // (1 / 4 * raio^2) raio = 3.7
+
+            Enki::Point centroid = this->findCentroid(robots);
+
+            double quadratic_distances_sum = 0.0;
+            for (auto it = robots.begin(); it != robots.end(); ++it) {
+                quadratic_distances_sum += calculateQuadraticDistance((*it)->pos, centroid);
+            }
+
+            return normalizer * quadratic_distances_sum;
         }
 
     public:
-        vector<double> simulate(vector<bitset<32>> population) {
-            Enki::World world(200, 200);
-
+        double simulate(vector<bitset<32>> population) {
+            Enki::World world(450, 450); // maria
             individual_list robots = this->createIndividuals(population);
-            vector<double> fitness;
+            double fitness = 0.0;
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
-                fitness.push_back(0);
-                // std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
+                //std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
             }
 	
-            // Run for 10 minutes - 4 step/second to match the camera's frame rate (4 fps)
-            for (int i = 0; i < 24000; ++i) {
-                world.step(0.1, 5);
+            // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
+            for (int i = 0; i < 1800; ++i) {
+                world.step(0.1, 10);
+                double t = i / 10;
 
-                Enki::Point centroid = this->findCentroid(robots);
-                double distances_sum = 0;
-
-                for (auto it = robots.begin(); it != robots.end(); ++it) {
-                    double quadratic_distance = calculateQuadraticDistance((*it)->pos, centroid);
-                    distances_sum += quadratic_distance;
-                }
-
-                auto f = fitness.begin();
-                double distances_avg = distances_sum / robots.size();
-                for (auto it = robots.begin(); it != robots.end(); ++it) {
-                    double quadratic_distance = calculateQuadraticDistance((*it)->pos, centroid);
-                    (*f) += 1 / (distances_avg + quadratic_distance);  
-                    ++f;
-                }
-
+                fitness += calculateDispersion(robots) * t;
             }
 
             return fitness;
