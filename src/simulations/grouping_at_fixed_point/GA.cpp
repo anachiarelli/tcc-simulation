@@ -142,6 +142,7 @@ class GA {
         }
 
         double transformChromosomeSegmentValueIntoSpeed(uint64_t value) {
+            //cout << value << endl;
             return (-12.8 + (value * 0.1));
         }
 

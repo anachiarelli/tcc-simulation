@@ -12,7 +12,7 @@ class GeneticEPuck : public Enki::EPuck {
         uint64_t decodeChromosomeSegment(int begin, int length) {
             uint64_t value = 0;
 
-            for (size_t i = begin; i < length; ++i) {
+            for (size_t i = begin; i < (begin + length); ++i) {
                 if (this->chromosome[i]) {
                     value |= (1ULL << (i - begin));
                 }
@@ -30,7 +30,7 @@ class GeneticEPuck : public Enki::EPuck {
             this->speed_seeing_wall[0] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8));
             this->speed_seeing_wall[1] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8));
 
-            //cout << this->speed_seeing_robot[0] << ", " << this->speed_seeing_robot[1] << "wall: " << this->speed_seeing_wall[0] << "," << this->speed_seeing_wall[1] << endl;
+            cout << this->speed_seeing_robot[0] << ", " << this->speed_seeing_robot[1] << "wall: " << this->speed_seeing_wall[0] << "," << this->speed_seeing_wall[1] << endl;
         }
 
     public:
