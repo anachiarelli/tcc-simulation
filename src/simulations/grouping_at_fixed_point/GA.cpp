@@ -40,7 +40,7 @@ class GA {
                 Simulator *simulator = new Simulator(316);
                 population_type clones;
 
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i < 100; i++) {
                     clones.push_back(*p);
                 }
 
@@ -231,7 +231,7 @@ class GA {
             vector<double> evaluation_result = this->evaluate_population(population, 0);	
             this->printFitness(evaluation_result, population);
 
-            for (int i = 0; i < 100; ++i) {
+            for (int i = 0; i < 30; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);
                 evaluation_result = this->evaluate_population(population, (i+1));
                 this->printFitness(evaluation_result, population);

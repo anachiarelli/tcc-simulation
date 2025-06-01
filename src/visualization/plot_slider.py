@@ -2,19 +2,20 @@ import csv
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.animation import FuncAnimation
+from matplotlib.widgets import Slider
 import numpy as np
 
 # Parâmetros
 num_robos = 100
 diametro_robo = 0.074  # metros (7,4 cm)
-interpolacoes_por_frame = 1  # mais = mais suave
+interpolacoes_por_frame = 10  # mais = mais suave
 
 # Inicializa as trajetórias
 trajetorias_x_raw = [[] for _ in range(num_robos)]
 trajetorias_y_raw = [[] for _ in range(num_robos)]
 
 # Leitura do arquivo
-with open('../../output/003_11011010001000111010011010101001.txt', newline='') as csvfile:
+with open('../../output/001_11111000000101010000010110000000.txt', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
         row = [float(value.strip()) for value in row if value.strip()]
@@ -53,6 +54,7 @@ num_frames = len(trajetorias_x_interp[0])
 
 # Setup do gráfico
 fig, ax = plt.subplots(figsize=(10, 8))
+plt.subplots_adjust(bottom=0.15)  # espaço para o slider embaixo
 cores = plt.cm.get_cmap('tab10', num_robos)
 linhas = []
 marcadores = []
@@ -69,7 +71,7 @@ for i in range(num_robos):
     circulos.append(circulo)
 
 # Ajuste de limites (fixar arena em 316x316 metros)
-ax.set_xlim(0, 316)  # -158 a 158
+ax.set_xlim(0, 316)
 ax.set_ylim(0, 316)
 
 ax.set_title('Animação Suave das Trajetórias dos Robôs')
@@ -85,12 +87,20 @@ def update(frame):
         linhas[i].set_data(x[:frame+1], y[:frame+1])
         marcadores[i].set_data(x[frame], y[frame])
         circulos[i].center = (x[frame], y[frame])
+    fig.canvas.draw_idle()
     return linhas + marcadores + circulos
 
-# Criação da animação com passos interpolados
-ani = FuncAnimation(fig, update, frames=num_frames, interval=1, blit=True)
+# Inicializa com frame 0
+update(0)
 
-# Para salvar (opcional)
-# ani.save('animacao_interpolada.mp4', fps=20, dpi=200)
+# Slider
+ax_slider = plt.axes([0.15, 0.05, 0.7, 0.03])  # posição do slider: esquerda, baixo, largura, altura
+slider = Slider(ax_slider, 'Frame', 0, num_frames-1, valinit=0, valfmt='%0.0f')
+
+def slider_update(val):
+    frame = int(slider.val)
+    update(frame)
+
+slider.on_changed(slider_update)
 
 plt.show()

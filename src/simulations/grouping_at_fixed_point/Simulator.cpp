@@ -99,12 +99,10 @@ class Simulator {
                 double t = i / 10.0;
 
                 fitness += calculateDispersion(robots) * t;
-                if (i % 180 == 0) {
-                    for (auto it = robots.begin(); it != robots.end(); ++it) {
-                        output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
-                    }
-                    output_file << endl;
+                for (auto it = robots.begin(); it != robots.end(); ++it) {
+                    output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
                 }
+                output_file << endl;
             }
 
             cout << "Final dispersion: " << calculateDispersion(robots) << endl;
