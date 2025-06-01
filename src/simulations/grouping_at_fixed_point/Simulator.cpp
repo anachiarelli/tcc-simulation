@@ -15,7 +15,7 @@ class Simulator {
             random_device rand_dev;
             mt19937 generator(rand_dev());
             // TODO: parameterize world size
-            uniform_real_distribution<double> position_distr(10, 190);
+            uniform_real_distribution<double> position_distr(10, 300); //gauci_a
             uniform_real_distribution<double> angle_distr(-M_PI, M_PI);
 
 
@@ -59,16 +59,18 @@ class Simulator {
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 quadratic_distances_sum += calculateQuadraticDistance((*it)->pos, centroid);
             }
+            cout << "qds = " << quadratic_distances_sum << endl;
 
             return normalizer * quadratic_distances_sum;
         }
 
     public:
         double simulate(vector<bitset<32>> population) {
-            Enki::World world(400, 400); // maria
+            Enki::World world(316, 316); // gauci_a
             individual_list robots = this->createIndividuals(population);
             double fitness = 0.0;
 
+            cout << "simulation beginning " << population[0] << endl;
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
                 //std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
@@ -80,6 +82,7 @@ class Simulator {
                 double t = i / 10;
 
                 fitness += calculateDispersion(robots) * t;
+                cout << "step fitness = " << fitness << endl;
             }
 
             return fitness;

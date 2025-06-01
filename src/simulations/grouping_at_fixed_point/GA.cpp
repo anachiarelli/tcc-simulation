@@ -17,7 +17,9 @@ class GA {
             mt19937 generator(rand_dev());
             uniform_int_distribution<uint8_t> distr(0, 1);
 
-            for (unsigned i = 0; i < this->population_size; ++i) {
+            bitset<32> gauci("00000000001001100000000011111111");
+            population.push_back(gauci);
+            for (unsigned i = 0; i < this->population_size -1; ++i) {
                 bitset<32> chromosome;
                 for (size_t i = 0; i < 32; ++i) {
                     chromosome[i] = distr(generator);
@@ -59,6 +61,7 @@ class GA {
             double current_evaluation_sum = 0;
 
             for (auto evaluation_it = evaluation_result.begin(); evaluation_it != evaluation_result.end(); ++evaluation_it) {
+                current_evaluation_sum += (*evaluation_it);
                 if (current_evaluation_sum >= pick) {
                     return (*population_it);
                 }
@@ -70,18 +73,32 @@ class GA {
         }
 
         bitset<32> crossover(bitset<32> parent_1, bitset<32>parent_2) {
-            bitset<32> left_mask("00001111000011110000111100001111");
-            bitset<32> right_mask("11110000111100001111000011110000");
+            // bitset<32> left_mask("00001111000011110000111100001111");
+            // bitset<32> right_mask("11110000111100001111000011110000");
             
+            //bitset<32> left_mask("00000000000000001111111111111111"); // crossmeio
+            //bitset<32> right_mask("11111111111111110000000000000000");
+
+            random_device rand_dev;
+            mt19937 generator(rand_dev());
+            uniform_int_distribution<int> distr(0, 1);
+            
+            bitset<32> left_mask("00000000000000000000000000000000");
+            bitset<32> right_mask("00000000000000000000000000000000");
+
+            for (int i = 0; i < 32; ++i) {
+                if (distr(generator) == 0) {
+                    left_mask.flip(i);
+                } else {
+                    right_mask.flip(i);
+                }
+            }
+
             bitset<32> genes_from_parent_1 = parent_1 & left_mask;
             bitset<32> genes_from_parent_2 = parent_2 & right_mask;
 
             bitset<32> child_1 = genes_from_parent_1 | genes_from_parent_2;
             bitset<32> child_2 = genes_from_parent_2 | genes_from_parent_1;
-
-            random_device rand_dev;
-            mt19937 generator(rand_dev());
-            uniform_int_distribution<int> distr(0, 1);
 
             int pick = distr(generator);
 
@@ -114,16 +131,23 @@ class GA {
             population_type next_population;
             double evaluation_sum = 0;
 
-            for (auto it = evaluation_result.begin(); it != evaluation_result.end(); ++it) {
-                evaluation_sum += (*it);
+            int best_index = 0;
+            for (int i = 0; i < evaluation_result.size(); ++i) {
+                if (evaluation_result[best_index] < evaluation_result[i]) {
+                    best_index = i;
+                }
+                evaluation_sum += evaluation_result[i];
             }
 
-            for (int i = 0; i < current_population.size(); ++i) {
+            next_population.push_back(current_population[best_index]); // elitism
+            for (int i = 0; i < current_population.size() - 1; ++i) {
                 bitset<32> parent_1 = this->selectParent(current_population, evaluation_result, evaluation_sum);
                 bitset<32> parent_2 = this->selectParent(current_population, evaluation_result, evaluation_sum);
                 bitset<32> child = this->crossover(parent_1, parent_2);
-
+                
                 next_population.push_back(this->mutate(child));
+
+                //cout << "parent 1: " << parent_1 << " parent 2:" << parent_2 << " child:" << child << endl;
             }
 
             return next_population;
@@ -133,7 +157,7 @@ class GA {
         uint64_t decodeChromosomeSegment(int begin, int length, bitset<32> chromosome) {
             uint64_t value = 0;
 
-            for (size_t i = begin; i < length; ++i) {
+            for (size_t i = begin; i < (length + begin); ++i) {
                 if (chromosome[i]) {
                     value |= (1ULL << (i - begin));
                 }
@@ -151,23 +175,47 @@ class GA {
         }
 
         void printFitness(vector<double> evaluation_result, population_type population) {
-            int best_index = -1;
+            int best_index = 0;
             double fitness_sum = 0;
 
-            for (int i = 0; i < population.size(); ++i) {
+            for (int i = 0; i < evaluation_result.size(); ++i) {
                 fitness_sum += evaluation_result[i];
-                if (best_index == -1 || evaluation_result[best_index] < evaluation_result[i]) {
+                if (evaluation_result[best_index] < evaluation_result[i]) {
                     best_index = i;
                 }
             }
+
+            cout << "\"" << evaluation_result[best_index] << "\",";
+            cout << "\"" << (fitness_sum / evaluation_result.size()) << "\",";
 
             double speed1 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(0, 8, population[best_index]));
             double speed2 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8, population[best_index]));
             double speed3 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8, population[best_index]));
             double speed4 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8, population[best_index]));
 
-            cout << evaluation_result[best_index] << " " << (fitness_sum / evaluation_result.size()) << " (" << speed1 << ", " << speed2 << ") (" << speed3 << ", " << speed4 << ")" << endl;
+            cout << "\"" << population[best_index] << "\"," 
+                << "\"" << speed1 << "\","
+                << "\"" << speed2 << "\","
+                << "\"" << speed3 << "\","
+                << "\"" << speed4 << "\",";
+
+            for (int i = 0; i < population.size(); ++i) {
+                double speed1 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(0, 8, population[i]));
+                double speed2 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8, population[i]));
+                double speed3 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8, population[i]));
+                double speed4 = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8, population[i]));
+
+                cout << "\"" << population[i] << "\"," 
+                     << "\"" << speed1 << "\","
+                     << "\"" << speed2 << "\","
+                     << "\"" << speed3 << "\","
+                     << "\"" << speed4 << "\","
+                     << "\"" << evaluation_result[i] << "\",";
+            }
+
+            cout << endl;
         }
+
 
         void run() {
             population_type population = this->createInitialPopulation();
