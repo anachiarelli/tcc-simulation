@@ -1,9 +1,11 @@
 #include <enki/PhysicalEngine.h>
 #include "./GeneticEPuck.cpp"
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <random>
 #include <bitset>
+#include <filesystem>
 using namespace std;
 using individual_list = vector<GeneticEPuck*>;
 
@@ -68,17 +70,28 @@ class Simulator {
             this->world_size = world_size;
         }
 
-        double simulate(vector<bitset<32>> population) {
+        double simulate(vector<bitset<32>> population, string simulation_name) {
             Enki::World world(this->world_size, this->world_size);
             individual_list robots = this->createIndividuals(population);
             double fitness = 0.0;
 
+            ofstream output_file("/root/simulation/output/" + simulation_name + ".txt");
+
+            // filesystem::path currentPath = filesystem::current_path();
+            // cout << "Current Directory: " << currentPath << endl;
+            
+            if (!output_file.is_open()) {
+                cerr << "Unable to open file" << endl;
+                exit(-1);
+            }
+
             cout << "Starting simulation for " << population[0] << " with world size " << this->world_size << endl;
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
+                output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
                 world.addObject(*it);
-                //std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
             }
+            output_file << endl;
 	
             // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
             for (int i = 0; i < 1800; ++i) {
@@ -86,10 +99,17 @@ class Simulator {
                 double t = i / 10.0;
 
                 fitness += calculateDispersion(robots) * t;
+                if (i % 180 == 0) {
+                    for (auto it = robots.begin(); it != robots.end(); ++it) {
+                        output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
+                    }
+                    output_file << endl;
+                }
             }
 
             cout << "Final dispersion: " << calculateDispersion(robots) << endl;
 
+            output_file.close();
             return fitness;
         }
 };

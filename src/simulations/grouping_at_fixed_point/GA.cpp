@@ -17,9 +17,9 @@ class GA {
             mt19937 generator(rand_dev());
             uniform_int_distribution<uint8_t> distr(0, 1);
 
-            bitset<32> gauci("00000000001001100000000011111111");
-            population.push_back(gauci);
-            for (unsigned i = 0; i < this->population_size -1; ++i) {
+            // bitset<32> gauci("00000000001001100000000011111111");
+            // population.push_back(gauci);
+            for (unsigned i = 0; i < this->population_size; ++i) {
                 bitset<32> chromosome;
                 for (size_t i = 0; i < 32; ++i) {
                     chromosome[i] = distr(generator);
@@ -32,7 +32,7 @@ class GA {
         /**
          * @return positionally encoded list of fitness where the position of fitness matches the position of the individual in the given population vector
          */
-        vector<double> evaluate_population(population_type population) {
+        vector<double> evaluate_population(population_type population, int generation) {
             vector<double> fitnesses;
 
             for (auto p = population.begin(); p != population.end(); ++p) {
@@ -44,7 +44,10 @@ class GA {
                     clones.push_back(*p);
                 }
 
-                double cost = simulator->simulate(clones);
+                string generation_str = to_string(generation);
+                generation_str = string(3 - generation_str.length(), '0') + generation_str;
+                double cost = simulator->simulate(clones, generation_str + "_" + (*p).to_string());
+
                 // Setting fitness to 1/cost, as the algorithm's goal is to maximize it
                 // Also, multiplying fitness by 100,000,000 to make it easier to read on logs - it shouldn't affect performance at all
                 double fitness = 100000000 / cost;
@@ -81,13 +84,14 @@ class GA {
             // bitset<32> left_mask("00001111000011110000111100001111");
             // bitset<32> right_mask("11110000111100001111000011110000");
             
-            //bitset<32> left_mask("00000000000000001111111111111111"); // crossmeio
+            //bitset<32> left_mask("00000000000000001111111111111111"); // single point crossover
             //bitset<32> right_mask("11111111111111110000000000000000");
 
             random_device rand_dev;
             mt19937 generator(rand_dev());
             uniform_int_distribution<int> distr(0, 1);
             
+            // uniform crossover
             bitset<32> left_mask("00000000000000000000000000000000");
             bitset<32> right_mask("00000000000000000000000000000000");
 
@@ -224,12 +228,12 @@ class GA {
 
         void run() {
             population_type population = this->createInitialPopulation();
-            vector<double> evaluation_result = this->evaluate_population(population);	
+            vector<double> evaluation_result = this->evaluate_population(population, 0);	
             this->printFitness(evaluation_result, population);
 
-            for (int i = 0; i < 1000; ++i) {
+            for (int i = 0; i < 100; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);
-                evaluation_result = this->evaluate_population(population);
+                evaluation_result = this->evaluate_population(population, (i+1));
                 this->printFitness(evaluation_result, population);
             }
         }
