@@ -36,14 +36,19 @@ class GA {
             vector<double> fitnesses;
 
             for (auto p = population.begin(); p != population.end(); ++p) {
-                Simulator *simulator = new Simulator();
+                // World size of 316 taken from GAUCI_A
+                Simulator *simulator = new Simulator(316);
                 population_type clones;
 
                 for (int i = 0; i < 10; i++) {
                     clones.push_back(*p);
                 }
 
-                fitnesses.push_back(100000000/(simulator->simulate(clones)));
+                double cost = simulator->simulate(clones);
+                // Setting fitness to 1/cost, as the algorithm's goal is to maximize it
+                // Also, multiplying fitness by 100,000,000 to make it easier to read on logs - it shouldn't affect performance at all
+                double fitness = 100000000 / cost;
+                fitnesses.push_back(fitness);
             }
 
             return fitnesses;

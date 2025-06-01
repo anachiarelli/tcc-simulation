@@ -9,15 +9,15 @@ using individual_list = vector<GeneticEPuck*>;
 
 class Simulator {
     private:
+        int world_size;
+
         individual_list createIndividuals(vector<bitset<32>> population) {
             individual_list individuals;
 
             random_device rand_dev;
             mt19937 generator(rand_dev());
-            // TODO: parameterize world size
-            uniform_real_distribution<double> position_distr(10, 300); //gauci_a
+            uniform_real_distribution<double> position_distr(10, this->world_size - 10); //gauci_a
             uniform_real_distribution<double> angle_distr(-M_PI, M_PI);
-
 
             for (auto it = population.begin(); it != population.end(); ++it) {
                 GeneticEPuck *robot = new GeneticEPuck(*it);
@@ -59,18 +59,22 @@ class Simulator {
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 quadratic_distances_sum += calculateQuadraticDistance((*it)->pos, centroid);
             }
-            cout << "qds = " << quadratic_distances_sum << endl;
-
+            
             return normalizer * quadratic_distances_sum;
         }
 
     public:
+        Simulator(int world_size) {
+            this->world_size = world_size;
+        }
+
         double simulate(vector<bitset<32>> population) {
-            Enki::World world(316, 316); // gauci_a
+            Enki::World world(this->world_size, this->world_size);
             individual_list robots = this->createIndividuals(population);
             double fitness = 0.0;
 
-            cout << "simulation beginning " << population[0] << endl;
+            cout << "Starting simulation for " << population[0] << " with world size " << this->world_size << endl;
+
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 world.addObject(*it);
                 //std::cout << "E-puck pos is ( x = "<< (*it)->pos.x << ", y =" << (*it)->pos.y << ", angle = " << (*it)->angle << ")" << std::endl;
@@ -79,11 +83,12 @@ class Simulator {
             // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
             for (int i = 0; i < 1800; ++i) {
                 world.step(0.1, 10);
-                double t = i / 10;
+                double t = i / 10.0;
 
                 fitness += calculateDispersion(robots) * t;
-                cout << "step fitness = " << fitness << endl;
             }
+
+            cout << "Final dispersion: " << calculateDispersion(robots) << endl;
 
             return fitness;
         }
