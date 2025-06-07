@@ -2,6 +2,7 @@
 #include <vector>
 #include <random>
 #include <bitset>
+#include <filesystem>
 #include "./Simulator.cpp"
 using namespace std;
 using population_type = vector<bitset<32>>;
@@ -35,25 +36,40 @@ class GA {
         vector<double> evaluate_population(population_type population, int generation) {
             vector<double> fitnesses;
 
+            string generation_str = to_string(generation);
+            generation_str = string(3 - generation_str.length(), '0') + generation_str;
+            string output_dir = "/root/simulation/output/current/" + generation_str;
+
+            filesystem::create_directory(output_dir);
+            ofstream fitness_file(output_dir + "/fitness.txt");
+            if (!fitness_file.is_open()) {
+                cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << endl;
+                exit(-1);
+            }
+
+            int num = 0;
+
             for (auto p = population.begin(); p != population.end(); ++p) {
                 // World size of 316 taken from GAUCI_A
                 Simulator *simulator = new Simulator(316);
                 population_type clones;
 
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 10; i++) {
                     clones.push_back(*p);
                 }
 
-                string generation_str = to_string(generation);
-                generation_str = string(3 - generation_str.length(), '0') + generation_str;
-                double cost = simulator->simulate(clones, generation_str + "_" + (*p).to_string());
+                string simulation_name = to_string(num) + "_" + (*p).to_string();
+                double cost = simulator->simulate(clones, simulation_name, output_dir);
+                num += 1;
 
                 // Setting fitness to 1/cost, as the algorithm's goal is to maximize it
                 // Also, multiplying fitness by 100,000,000 to make it easier to read on logs - it shouldn't affect performance at all
                 double fitness = 100000000 / cost;
+                fitness_file << fitness << endl;
                 fitnesses.push_back(fitness);
             }
 
+            fitness_file.close();
             return fitnesses;
         }
 
@@ -231,7 +247,7 @@ class GA {
             vector<double> evaluation_result = this->evaluate_population(population, 0);	
             this->printFitness(evaluation_result, population);
 
-            for (int i = 0; i < 30; ++i) {
+            for (int i = 0; i < 19; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);
                 evaluation_result = this->evaluate_population(population, (i+1));
                 this->printFitness(evaluation_result, population);

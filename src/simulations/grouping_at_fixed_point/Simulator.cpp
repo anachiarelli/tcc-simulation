@@ -70,44 +70,60 @@ class Simulator {
             this->world_size = world_size;
         }
 
-        double simulate(vector<bitset<32>> population, string simulation_name) {
+        double simulate(vector<bitset<32>> population, string simulation_name, string output_dir) {
             Enki::World world(this->world_size, this->world_size);
             individual_list robots = this->createIndividuals(population);
-            double fitness = 0.0;
+            double cost = 0.0;
 
-            ofstream output_file("/root/simulation/output/" + simulation_name + ".txt");
+            filesystem::create_directory(output_dir + "/positions");
+            filesystem::create_directory(output_dir + "/dispersions");
+            
+            ofstream position_file(output_dir + "/positions/" + simulation_name);
+            ofstream dispersion_file(output_dir + "/dispersions/" + simulation_name);
 
             // filesystem::path currentPath = filesystem::current_path();
             // cout << "Current Directory: " << currentPath << endl;
             
-            if (!output_file.is_open()) {
-                cerr << "Unable to open file" << endl;
+            if (!position_file.is_open()) {
+                cerr << "Unable to open position file" << endl;
+                exit(-1);
+            }
+
+            if (!dispersion_file.is_open()) {
+                cerr << "Unable to open dispersion file" << endl;
                 exit(-1);
             }
 
             cout << "Starting simulation for " << population[0] << " with world size " << this->world_size << endl;
 
             for (auto it = robots.begin(); it != robots.end(); ++it) {
-                output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
+                position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
                 world.addObject(*it);
             }
-            output_file << endl;
+            position_file << endl;
+
+            double dispersion = calculateDispersion(robots);
+            dispersion_file << dispersion << endl;
 	
             // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
             for (int i = 0; i < 1800; ++i) {
                 world.step(0.1, 10);
                 double t = i / 10.0;
 
-                fitness += calculateDispersion(robots) * t;
+                dispersion = calculateDispersion(robots);
+                dispersion_file << dispersion << endl;
+                cost += dispersion * t;
+                
                 for (auto it = robots.begin(); it != robots.end(); ++it) {
-                    output_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
+                    position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
                 }
-                output_file << endl;
+                position_file << endl;
             }
 
-            cout << "Final dispersion: " << calculateDispersion(robots) << endl;
+            // cout << "Final dispersion: " << calculateDispersion(robots) << endl;
 
-            output_file.close();
-            return fitness;
+            position_file.close();
+
+            return cost;
         }
 };
