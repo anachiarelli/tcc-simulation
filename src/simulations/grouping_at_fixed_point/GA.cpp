@@ -58,7 +58,9 @@ class GA {
                     clones.push_back(*p);
                 }
 
-                string simulation_name = to_string(num) + "_" + (*p).to_string();
+                string num_str = to_string(num);
+                num_str = string(3 - num_str.length(), '0') + num_str;
+                string simulation_name = num_str + "_" + (*p).to_string();
                 double cost = simulator->simulate(clones, simulation_name, output_dir);
                 num += 1;
 
@@ -135,7 +137,7 @@ class GA {
         }
 
         bitset<32> mutate(bitset<32> child) {
-            double chance = 0.01;
+            double chance = 0.001;
 
             random_device rand_dev;
             mt19937 generator(rand_dev());
@@ -247,7 +249,7 @@ class GA {
             vector<double> evaluation_result = this->evaluate_population(population, 0);	
             this->printFitness(evaluation_result, population);
 
-            for (int i = 0; i < 19; ++i) {
+            for (int i = 0; i < 39; ++i) {
                 population = this->createNextPopulation(population, evaluation_result);
                 evaluation_result = this->evaluate_population(population, (i+1));
                 this->printFitness(evaluation_result, population);

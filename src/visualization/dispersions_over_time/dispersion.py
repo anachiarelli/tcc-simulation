@@ -2,34 +2,24 @@ import matplotlib.pyplot as plt
 import statistics
 from pathlib import Path
 
-colors = [
-    '#d50000',
-    '#e30038',
-    '#e9005f',
-    '#ec0086',
-    '#e800b0',
-    '#d436d6',
-    '#b359f8',
-    '#8375ff',
-    '#3e8cff',
-    '#009cfa',
-    '#00a3e2',
-    '#00a8d5',
-    '#00adcb',
-    '#00b2c0',
-    '#00b8b2',
-    '#00bf9e',
-    '#00c783',
-    '#00cc5e',
-    '#63cc42',
-    '#95c92c'
-]
-
-base_dir = Path('/home/anachiarelli/projects/UDESC/tcc/simulation/output/7-6-10bots-20gens-uniform-2')
+base_dir = Path('/home/anachiarelli/projects/UDESC/tcc/simulation/output/current')
 
 for generation_dir in base_dir.iterdir():
     if not generation_dir.is_dir():
         continue
+
+    fitness_by_individual = {}
+    with (generation_dir / 'fitness.txt').open() as fitness_file:
+        i = 0
+        for row in fitness_file:
+            individual = str(i).zfill(3)
+            fitness_by_individual[individual] = float(row)
+            i += 1
+
+    best_individual = None
+    for key in fitness_by_individual.keys():
+        if (best_individual == None) or (fitness_by_individual[best_individual] < fitness_by_individual[key]):
+            best_individual = key
 
     dispersion_over_time_per_individual = {}
     file_names = []
@@ -52,14 +42,17 @@ for generation_dir in base_dir.iterdir():
     average_dispersion_over_time = [statistics.mean([dispersion_over_time_per_individual[i][s] for i in individuals]) for s in range(steps)]
 
     generation = generation_dir.name
+    plt.figure(figsize=(8, 5)) 
     plt.title('Geração ' + str(int(generation)))
-    plt.plot(average_dispersion_over_time, color = colors[int(generation)])
+    plt.plot(dispersion_over_time_per_individual[best_individual], label='Menor dispersão', linewidth=3)
+    plt.plot(average_dispersion_over_time, linestyle='dotted', label='Média', linewidth=3)
     plt.grid()
     plt.xlim([0, len(average_dispersion_over_time)])
     plt.ylim([0, 3000]) # TODO
-    plt.xlabel('tempo (s/10)')
-    plt.ylabel('dispersão')
+    plt.xlabel('Tempo (s/10)')
+    plt.ylabel('Dispersão')
+    plt.legend()
     #plt.show()
     plt.savefig(generation + '.png')
     plt.clf()
-    #break
+    plt.close()
