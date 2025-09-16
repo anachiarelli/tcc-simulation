@@ -8,14 +8,14 @@ import numpy as np
 # Parâmetros
 num_robos = 100
 diametro_robo = 0.074  # metros (7,4 cm)
-interpolacoes_por_frame = 10  # mais = mais suave
+interpolacoes_por_frame = 1  # mais = mais suave
 
 # Inicializa as trajetórias
 trajetorias_x_raw = [[] for _ in range(num_robos)]
 trajetorias_y_raw = [[] for _ in range(num_robos)]
 
 # Leitura do arquivo
-with open('../../output/001_11111000000101010000010110000000.txt', newline='') as csvfile:
+with open('../../output/100 robots/000_10010110110010001100101011000101.txt', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
         row = [float(value.strip()) for value in row if value.strip()]

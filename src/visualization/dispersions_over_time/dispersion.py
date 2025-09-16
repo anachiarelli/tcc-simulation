@@ -41,18 +41,19 @@ for generation_dir in base_dir.iterdir():
     
     average_dispersion_over_time = [statistics.mean([dispersion_over_time_per_individual[i][s] for i in individuals]) for s in range(steps)]
 
-    generation = generation_dir.name
-    plt.figure(figsize=(8, 5)) 
-    plt.title('Geração ' + str(int(generation)))
-    plt.plot(dispersion_over_time_per_individual[best_individual], label='Menor dispersão', linewidth=3)
-    plt.plot(average_dispersion_over_time, linestyle='dotted', label='Média', linewidth=3)
+    generation = int(generation_dir.name) + 1
+    plt.figure(figsize=(6, 4)) 
+    #plt.subplots_adjust(top=0.99)
+    #plt.title('Dispersão da ' + str(generation) + 'ª geração - 10 robôs')
+    plt.plot(dispersion_over_time_per_individual[best_individual], label='Menor dispersão')
+    plt.plot(average_dispersion_over_time, linestyle='dotted', label='Média')
     plt.grid()
     plt.xlim([0, len(average_dispersion_over_time)])
-    plt.ylim([0, 3000]) # TODO
+    plt.ylim([0, 32000]) # TODO 10 = 3000 100 = 32000
     plt.xlabel('Tempo (s/10)')
     plt.ylabel('Dispersão')
     plt.legend()
     #plt.show()
-    plt.savefig(generation + '.png')
+    plt.savefig(str(generation) + '.png', bbox_inches='tight', pad_inches=0)
     plt.clf()
     plt.close()

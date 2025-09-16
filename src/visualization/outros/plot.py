@@ -14,7 +14,7 @@ trajetorias_x_raw = [[] for _ in range(num_robos)]
 trajetorias_y_raw = [[] for _ in range(num_robos)]
 
 # Leitura do arquivo
-with open('../../output/003_11011010001000111010011010101001.txt', newline='') as csvfile:
+with open('../../output/100 robots/012_00101010000010011111101101100111.txt', newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for row in reader:
         row = [float(value.strip()) for value in row if value.strip()]
@@ -91,6 +91,6 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=num_frames, interval=1, blit=True)
 
 # Para salvar (opcional)
-# ani.save('animacao_interpolada.mp4', fps=20, dpi=200)
+#ani.save('sim.mp4', fps=20, dpi=200)
 
 plt.show()
