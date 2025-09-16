@@ -1,3 +1,6 @@
 [submodule "src/enki"]
 	path = src/enki
 	url = https://github.com/enki-community/enki.git
+[submodule "test_src/pugixml"]
+	path = test_src/pugixml
+	url = https://github.com/zeux/pugixml.git

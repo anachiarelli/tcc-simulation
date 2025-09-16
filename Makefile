@@ -16,3 +16,12 @@ run: build-simulation
 
 clear-build:
 	docker run --rm -ti -v ./:/root/simulation tcc-simulation-env rm -fr build
+
+
+
+build-test:
+	docker run --rm -ti -v ./:/root/simulation tcc-simulation-env cmake test_src/ -B build_test
+	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build_test/ tcc-simulation-env make
+
+run-test: build-test
+	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/ tcc-simulation-env ./build_test/load_input
