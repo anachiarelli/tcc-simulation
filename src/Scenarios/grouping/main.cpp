@@ -2,6 +2,8 @@
 #include "../../Automaton/AutomatonFactory.cpp"
 #include "../../Genetics/GeneMap/GeneMapBuilder.cpp"
 #include "../../Genetics/GeneMap/GeneMap.cpp"
+#include "../../Genetics/Algorithm/GeneticAlgorithm.cpp"
+#include <boost/dynamic_bitset.hpp>
 
 #include "./GA.cpp"
 
@@ -22,9 +24,13 @@ int main(int argc, char *argv[]) {
 	gene_map.addSection(8, "uint"); // speed v1_left
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
+
+	boost::dynamic_bitset<> bitmask(gene_map.getLength());
+	std::cout << "Bitmask length: " << bitmask.size() << " bits." << std::endl;
+
+	GeneticAlgorithm algorithm = GeneticAlgorithm(gene_map, 40);
+	algorithm.run();
 	
-	GA* algorithm = new GA(40);
-	// algorithm->run();
 	std::cout << "Simulation finished." << std::endl;
 	return 0;
 }
