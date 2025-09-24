@@ -1,2 +1,1 @@
-add_subdirectory(automaton)
-add_subdirectory(scenarios)
+add_subdirectory(Scenarios)
