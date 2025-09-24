@@ -11,7 +11,7 @@ build-simulation: build
 	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/src/simulations/$(simulation) tcc-simulation-env make
 
 run: build-simulation
-	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/build/src/simulations/$(simulation) tcc-simulation-env ./$(simulation)
+	docker run --rm -ti -v ./:/root/simulation --workdir /root/simulation/ tcc-simulation-env ./build/src/simulations/$(simulation)/$(simulation)
 
 clear-build:
 	docker run --rm -ti -v ./:/root/simulation tcc-simulation-env rm -fr build

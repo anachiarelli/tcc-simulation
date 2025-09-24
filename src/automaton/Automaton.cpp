@@ -7,18 +7,19 @@ class State {
     bool is_initial;
 };
 
-class EventParam {
+/* class EventParam {
     std::string event_param_type;
     float min;
     float max;
     float step;
 };
+ */
 
-class Event {
+ class Event {
     int id;
     std::string name;
     bool is_controllable;
-    std::vector<EventParam> event_params;
+    // std::vector<EventParam> event_params;
 };
 
 class Transition {

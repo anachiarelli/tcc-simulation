@@ -1,16 +1,14 @@
-#include <enki/PhysicalEngine.h>
-#include <enki/robots/e-puck/EPuck.h>
 #include <iostream>
-#include <vector>
-#include <random>
-#include <bitset>
+#include "../../automaton/AutomatonFactory.cpp"
 
 #include "./GA.cpp"
 
-using namespace std;
+int main(int argc, char *argv[]) {
+	AutomatonFactory automaton_factory;
+	std::cout << argv[0] << std::endl;
 
-int main(int argc, char *argv[])
-{
+	automaton_factory.buildFromXMLFile("input/sync.xml");
+
 	GA* algorithm = new GA(40);
 	algorithm->run();
 }

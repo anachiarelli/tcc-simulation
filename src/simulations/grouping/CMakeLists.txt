@@ -3,3 +3,4 @@ link_directories (${PROJECT_BINARY_DIR})
 
 add_executable(grouping simulation.cpp)
 target_link_libraries(grouping enki)
+target_link_libraries(grouping pugixml)
