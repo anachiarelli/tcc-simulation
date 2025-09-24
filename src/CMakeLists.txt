@@ -1,2 +1,2 @@
 add_subdirectory(automaton)
-add_subdirectory(simulations)
+add_subdirectory(scenarios)
