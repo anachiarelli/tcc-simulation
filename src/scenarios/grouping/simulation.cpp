@@ -5,10 +5,9 @@
 
 int main(int argc, char *argv[]) {
 	AutomatonFactory automaton_factory;
-	std::cout << argv[0] << std::endl;
 
 	automaton_factory.buildFromXMLFile("input/sync.xml");
 
-	GA* algorithm = new GA(40);
-	algorithm->run();
+	// GA* algorithm = new GA(40);
+	// algorithm->run();
 }

@@ -8,6 +8,10 @@
 class AutomatonFactory {
     public:
         Automaton buildFromXMLFile(const char* path) {
+            std::vector<State> states;
+            std::vector<Event> events;
+            std::vector<Transition> transitions;
+
             pugi::xml_document doc;
             pugi::xml_parse_result result = doc.load_file(path);
             if (!result) {
@@ -16,14 +20,21 @@ class AutomatonFactory {
 
             // Automaton automaton;
 
-            std::vector<State> states;
-
+            int initial_state_id = -1;
             for (pugi::xml_node state : doc.child("model").child("data").children("state")) {
                 int id = state.attribute("id").as_int();
                 std::string name = state.attribute("name").as_string();
                 bool is_initial = state.attribute("initial").as_bool();
 
-                std::cout << "state: " << id << ", " << name << ", " << is_initial << std::endl;
+                if (is_initial) {
+                    initial_state_id = id;
+                }
+
+                if (id >= states.size()) {
+                    states.resize(id + 1);
+                }
+
+                states[id] = State(id, name, is_initial);
             }
 
             for (pugi::xml_node event : doc.child("model").child("data").children("event")) {
@@ -31,7 +42,7 @@ class AutomatonFactory {
                 std::string name = event.attribute("name").as_string();
                 bool is_controllable = event.attribute("controllable").as_bool();
 
-                std::cout << "event: " << id << ", " << name << ", " << is_controllable << std::endl;
+                events[id] = Event(id, name, is_controllable);
             }
 
             for (pugi::xml_node transition : doc.child("model").child("data").children("transition")) {
@@ -39,10 +50,14 @@ class AutomatonFactory {
                 int target = transition.attribute("target").as_int();
                 int event = transition.attribute("event").as_int();
 
-                std::cout << "transition: " << source << ", " << target << ", " << event << std::endl;
+                transitions.push_back(Transition(states[source], states[target], events[event]));
             }
 
-            std::cout << "ok" << std::endl;
-            return Automaton();
+            if (initial_state_id == -1) {
+                throw std::runtime_error("No initial state defined in the automaton.");
+            }
+            
+            Automaton automaton(events, transitions, states, states[initial_state_id]);
+            return automaton;
         }
 };
