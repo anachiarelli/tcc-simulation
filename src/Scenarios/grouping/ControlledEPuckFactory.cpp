@@ -14,9 +14,13 @@ public:
     ControlledEPuckFactory(Automaton* base_automaton) : base_automaton(base_automaton) {}
     
     ControlledEPuck* buildFromChromosome(individual_type chromosome) {
+        // std::cout << "Building modified automaton for " << chromosome << std::endl;
         Automaton* automaton = this->buildModifiedAutomatonFromChromosome(chromosome);
+        // std::cout << "Building AutomatonPlayer." << std::endl;
         AutomatonPlayer* player = new AutomatonPlayer(automaton);
+        // std::cout << "Building speeds_by_event." << std::endl;
         event_params speeds_by_event = this->buildSpeedsByEventFromChromosome(chromosome);
+        // std::cout << "Building ControlledEPuck." << std::endl;
         return new ControlledEPuck(player, speeds_by_event);
     }
 
@@ -28,22 +32,28 @@ private:
         std::vector<State*> states;
         std::vector<Event*> events;
 
-        for (auto state = this->base_automaton->getStates().begin(); state != this->base_automaton->getStates().end(); ++state) {
+        auto base_states = this->base_automaton->getStates();
+        // std::cout << "Cloning " << this->base_automaton->getStates().size() << " states..." << std::endl;
+        for (auto state = base_states.begin(); state != base_states.end(); ++state) {
             if ((*state)->getId() >= states.size()) {
                 states.resize((*state)->getId() + 1);
             }
             states[(*state)->getId()] = new State((*state)->getId(), (*state)->getName(), (*state)->isInitial());
         }
 
-        for (auto event = this->base_automaton->getEvents().begin(); event != this->base_automaton->getEvents().end(); ++event) {
+        auto base_events = this->base_automaton->getEvents();
+        // std::cout << "Cloning " << base_events.size() << " events..." << std::endl;
+        for (auto event = base_events.begin(); event != base_events.end(); ++event) {
             if ((*event)->getId() >= events.size()) {
                 events.resize((*event)->getId() + 1);
             }
             events[(*event)->getId()] = new Event((*event)->getId(), (*event)->getName(), (*event)->isControllable());
         }
         
+        auto base_transitions = this->base_automaton->getTransitions();
+        // std::cout << "Cloning " << base_transitions.size() << " transitions..." << std::endl;
         int controllable_transition_index = 0;
-        for (auto transition = this->base_automaton->getTransitions().begin(); transition != this->base_automaton->getTransitions().end(); ++transition) {
+        for (auto transition = base_transitions.begin(); transition != base_transitions.end(); ++transition) {
             if ((*transition)->isControllable()) {
                 if (chromosome[controllable_transition_index] == 0) {
                     controllable_transition_index++;

@@ -22,12 +22,15 @@ public:
         auto image = camera.image;
 
         if (image[29] == this->getColor() || image[30] == this->getColor()) {
+            // std::cout << "Dispatching event v1" << std::endl;
             this->player->dispatch("v1");
         } else {
+            // std::cout << "Dispatching event v0" << std::endl;
             this->player->dispatch("v0");
         }
 
         std::string action = this->player->step();
+        // std::cout << "Action: " << action << std::endl;
         if (this->speeds_by_event.find(action) != this->speeds_by_event.end()) {
             auto speeds = this->speeds_by_event[action];
             this->leftSpeed = speeds.first;
@@ -35,8 +38,8 @@ public:
         } else {
             // TODO: checar se o evento é mudar de velocidade ou andar na velocidade
             // caso seja andar, o robô deve parar caso nenhum evento seja encontrado
-            // this->leftSpeed = 0.0;
-            // this->rightSpeed = 0.0;
+            this->leftSpeed = 0.0;
+            this->rightSpeed = 0.0;
         }
 
         Enki::EPuck::controlStep(dt);

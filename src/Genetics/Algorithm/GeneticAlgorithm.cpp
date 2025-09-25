@@ -19,13 +19,18 @@ public:
     
     void run() {
         population_type population = this->createInitialPopulation();
+        std::cout << "Initial population created." << std::endl;
+        // for (const auto& individual : population) {
+        //     std::cout << individual << std::endl;
+        // }
+
         std::vector<double> fitnesses = this->evaluatePopulation(population, 0);
         // Print fitnesses for debugging
         for (int i = 0; i < fitnesses.size(); ++i) {
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 10; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -54,20 +59,30 @@ private:
             population.push_back(chromosome);
         }
 
-        // print population for debugging
-        for (const auto& individual : population) {
-            std::cout << individual << std::endl;
-        }
-
         return population;
     }
 
     std::vector<double> evaluatePopulation(population_type population, int generation) {
         std::vector<double> fitnesses;
 
+        string generation_str = to_string(generation);
+        generation_str = string(3 - generation_str.length(), '0') + generation_str;
+        string output_dir = "/root/simulation/output/current/" + generation_str;
+
+        filesystem::create_directory(output_dir);
+        ofstream fitness_file(output_dir + "/fitness.txt");
+        if (!fitness_file.is_open()) {
+            cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << endl;
+            exit(-1);
+        }
+
         for (int i = 0; i < population.size(); ++i) {
+            std::cout << "Evaluating individual " << i << " of generation " << generation << std::endl;
             double fitness = this->evaluator.evaluateFitness(population[i], i, generation);
             fitnesses.push_back(fitness);
+
+            fitness_file << fitness << endl;
+            std::cout << "Individual " << i << " fitness: " << fitness << std::endl;
         }
 
         return fitnesses;

@@ -14,6 +14,8 @@ public:
 			clones.push_back(individual);
 		}
 
+		std::cout << "Evaluating " << clones.size() << " clones of individual " << id << std::endl;
+
 		string num_str = to_string(id);
 		num_str = string(3 - num_str.length(), '0') + num_str;
 		string buffer;
@@ -24,6 +26,7 @@ public:
 		generation_str = string(3 - generation_str.length(), '0') + generation_str;
 		string output_dir = "/root/simulation/output/current/" + generation_str;
 
+		std::cout << "Setting up output directory: " << output_dir << std::endl;
 		double cost = simulator->simulate(clones, simulation_name, output_dir);
 
 		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it

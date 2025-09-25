@@ -7,7 +7,7 @@ import os
 # Parâmetros
 num_robos = 100
 diametro_robo = 0.074
-diretorio_base = '/home/anachiarelli/projects/UDESC/tcc/simulation/output/current'
+diretorio_base = '/home/anachiarelli/projects/udesc/tcc/simulation/output/current'
 geracoes_desejadas = ['000', '001', '004', '009', '019', '039']
 num_simulacoes = 40
 rows, cols = 8, 5
@@ -70,6 +70,6 @@ for geracao in geracoes_desejadas:
     )
 
     geracao = int(geracao) + 1
-    plt.savefig(str(geracao) + '.png', bbox_inches='tight', dpi=600)
+    plt.savefig(str(geracao) + '.png', bbox_inches='tight', dpi=100)
     plt.close()
     print(f"Salvo: {geracao}")

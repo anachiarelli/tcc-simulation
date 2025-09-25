@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import statistics
 from pathlib import Path
 
-base_dir = Path('/home/anachiarelli/projects/UDESC/tcc/simulation/output/current')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/current')
 
 for generation_dir in base_dir.iterdir():
     if not generation_dir.is_dir():

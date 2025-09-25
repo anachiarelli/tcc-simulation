@@ -1,3 +1,4 @@
 build
 **/output
 input
+src/visualization/videos/*.mp4

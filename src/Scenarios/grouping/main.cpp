@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE, robot_factory);
 	GroupingEvaluator evaluator(simulator, SWARM_SIZE);
 	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
+	std::cout << "Starting genetic algorithm..." << std::endl;
 	algorithm.run();
 
 	std::cout << "Simulation finished." << std::endl;

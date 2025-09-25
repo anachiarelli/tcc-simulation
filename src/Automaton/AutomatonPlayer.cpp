@@ -11,7 +11,8 @@ class AutomatonPlayer {
 
         std::string step() {
             std::vector<Event*> controllable_events;
-            for (auto transition = this->automaton->getTransitions().begin(); transition != this->automaton->getTransitions().end(); ++transition) {
+            auto transitions = this->automaton->getTransitions();
+            for (auto transition = transitions.begin(); transition != transitions.end(); ++transition) {
                 if ((*transition)->getSource()->getId() == this->current_state.getId() && (*transition)->isControllable()) {
                     controllable_events.push_back((*transition)->getEvent());
                 }
@@ -29,7 +30,8 @@ class AutomatonPlayer {
         }
 
         void dispatch(std::string event_name) {
-            for (auto transition = this->automaton->getTransitions().begin(); transition != this->automaton->getTransitions().end(); ++transition) {
+            auto transitions = this->automaton->getTransitions();
+            for (auto transition = transitions.begin(); transition != transitions.end(); ++transition) {
                 if ((*transition)->getSource()->getId() == this->current_state.getId() && (*transition)->getEvent()->getName() == event_name) {
                     this->current_state = *(*transition)->getTarget();
                     return;

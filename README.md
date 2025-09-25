@@ -27,6 +27,10 @@ Após a instalação das dependências:
 1. Compile o cenário: `cd /root/simulation/build/src/scenarios/[nome_do_cenario] && make`
 1. Execute: `./build/src/scenarios/[nome_do_cenario]/[nome_do_executavel]`
 
+---
+
+Pode ser necessário dar permissão de leitura e escrita para o diretório `/output`. 
+
 ## Notas
 - Velocidade máxima do e-puck no Enki é 12.8 cm/s.
 - As iterações da simulação ocorrem a cada 0.1s (apesar do e-puck só conseguir processar uma imagem a cada 0.25s).

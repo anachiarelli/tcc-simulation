@@ -10,6 +10,7 @@
 #include <random>
 #include <bitset>
 #include <filesystem>
+#include <chrono>
 #include <boost/dynamic_bitset.hpp>
 using namespace std;
 using robots_list = vector<ControlledEPuck*>;
@@ -21,12 +22,8 @@ public:
     SwarmSimulator(int world_size, ControlledEPuckFactory& robot_factory) : world_size(world_size), robot_factory(robot_factory) {}
 
     double simulate(population_type population, string simulation_name, string output_dir) {
-        Enki::World world(this->world_size, this->world_size);
-        robots_list robots = this->initRobots(population);
-        double cost = 0.0;
-
-        filesystem::create_directory(output_dir + "/positions");
-        filesystem::create_directory(output_dir + "/dispersions");
+        filesystem::create_directories(output_dir + "/positions");
+        filesystem::create_directories(output_dir + "/dispersions");
         
         ofstream position_file(output_dir + "/positions/" + simulation_name);
         ofstream dispersion_file(output_dir + "/dispersions/" + simulation_name);
@@ -41,7 +38,9 @@ public:
             exit(-1);
         }
 
-        cout << "Starting simulation for " << population[0] << " with world size " << this->world_size << endl;
+        Enki::World world(this->world_size, this->world_size);
+        robots_list robots = this->initRobots(population);
+        double cost = 0.0;
 
         for (auto it = robots.begin(); it != robots.end(); ++it) {
             position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
@@ -52,22 +51,31 @@ public:
         double dispersion = calculateDispersion(robots);
         dispersion_file << dispersion << endl;
 
+        cout << "Starting Simulation for " << population[0] << " - Initial dispersion: " << dispersion << endl;
+
+        std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::time_point checkpoint_time;
+
         // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
         for (int i = 0; i < 1800; ++i) {
+            // std::cout << "Simulation step " << i + 1 << "/1800" << std::endl;
             world.step(0.1, 10);
             double t = i / 10.0;
 
             dispersion = calculateDispersion(robots);
             dispersion_file << dispersion << endl;
             cost += dispersion * t;
+
+            // std::cout << "Dispersion at time " << t << "s: " << dispersion << std::endl;
             
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
             }
             position_file << endl;
         }
-
-        // cout << "Final dispersion: " << calculateDispersion(robots) << endl;
+        
+        checkpoint_time = std::chrono::steady_clock::now();
+        cout << "Final dispersion: " << calculateDispersion(robots) << " Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(checkpoint_time - start_time).count() << "ms" << endl;
 
         position_file.close();
 
@@ -92,6 +100,7 @@ private:
             robot->angle = angle_distr(generator);
 
             robots.push_back(robot);
+            // std::cout << "Robot position: (" << robot->pos.x << ", " << robot->pos.y << "), angle: " << robot->angle << std::endl;
         }
         
         return robots;
