@@ -51,7 +51,7 @@ class GA {
 
             for (auto p = population.begin(); p != population.end(); ++p) {
                 // World size of 316 taken from GAUCI_A
-                Simulator *simulator = new Simulator(316);
+                SwarmSimulator *simulator = new SwarmSimulator(316);
                 population_type clones;
 
                 for (int i = 0; i < 10; i++) {

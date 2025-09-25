@@ -6,10 +6,10 @@ import numpy as np
 import os
 
 # Parâmetros
-num_robos = 100
+num_robos = 10
 diametro_robo = 0.074  # metros (7,4 cm)
 interpolacoes_por_frame = 1  # mais = mais suave
-diretorio = '/home/anachiarelli/projects/UDESC/tcc/simulation/output/current/039/positions'  # Diretório com os arquivos de simulação
+diretorio = '/home/anachiarelli/projects/udesc/tcc/simulation/output/current/010/positions'  # Diretório com os arquivos de simulação
 num_simulacoes = 40  # Número de simulações a exibir
 rows, cols = 5, 8  # Layout do grid (5x8 = 40)
 
@@ -135,7 +135,7 @@ plt.tight_layout(pad=0.5, w_pad=0.2, h_pad=0.2)  # Reduz espaçamento entre subp
 
 print("Salvando vídeo")
 # Para salvar (opcional)
-ani.save(f'40-100.mp4', fps=10, dpi=100)
+ani.save(f'gen10-40-10.mp4', fps=10, dpi=100)
 
 # Maximiza a janela para Full HD
 # plt.get_current_fig_manager().full_screen_toggle()  # Pode variar dependendo do backend
