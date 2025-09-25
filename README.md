@@ -20,6 +20,7 @@ Esse projeto foi desenvolvido em ambiente Ubuntu 24.04, com os seguintes pacotes
 - build-essential
 - cmake
 - libgl1-mesa-dev
+- libboost-dev
 
 Após a instalação das dependências:
 1. Faça o _build_ do projeto: `cmake . -B build`
