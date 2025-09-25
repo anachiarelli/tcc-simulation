@@ -12,7 +12,10 @@ public:
     GeneticAlgorithm(int population_size, GeneMap gene_map, EvaluatorInterface& evaluator)
         : gene_map(gene_map),
           population_size(population_size),
-          evaluator(evaluator) {}
+          evaluator(evaluator) {
+        std::random_device rand_dev;
+        generator = std::mt19937(rand_dev());
+    }
     
     void run() {
         population_type population = this->createInitialPopulation();
@@ -37,17 +40,16 @@ private:
     GeneMap gene_map;
     EvaluatorInterface& evaluator;
 
+    std::mt19937 generator;
+    std::uniform_int_distribution<int> bit_dist{0, 1};
+
     population_type createInitialPopulation() {
         population_type population;
-
-        std::random_device rand_dev;
-        std::mt19937 generator(rand_dev());
-        std::uniform_int_distribution<uint8_t> distr(0, 1);
 
         for (unsigned i = 0; i < this->population_size; ++i) {
             boost::dynamic_bitset<> chromosome(gene_map.getLength());
             for (size_t i = 0; i < gene_map.getLength(); ++i) {
-                chromosome[i] = distr(generator);
+                chromosome[i] = randomBit();
             }
             population.push_back(chromosome);
         }
@@ -96,9 +98,6 @@ private:
     }
 
     individual_type selectParent(const population_type& population, const std::vector<double>& evaluation_result, double evaluation_sum) {
-
-        std::random_device rand_dev;
-        std::mt19937 generator(rand_dev());
         std::uniform_real_distribution<double> distr(0, evaluation_sum);
 
         individual_type parent;
@@ -116,16 +115,11 @@ private:
     }
 
     individual_type crossover(const individual_type& parent_1, const individual_type& parent_2) {
-        std::random_device rand_dev;
-        std::mt19937 generator(rand_dev());
-        std::uniform_int_distribution<int> distr(0, 1);
-
         individual_type left_mask(gene_map.getLength());
         individual_type right_mask(gene_map.getLength());
 
         for (size_t i = 0; i < gene_map.getLength(); ++i) {
-            int pick = distr(generator);
-            if (pick == 0) {
+            if (randomBit() == 0) {
                 left_mask.flip(i);
             } else {
                 right_mask.flip(i);
@@ -138,16 +132,12 @@ private:
         individual_type child_1 = genes_from_parent_1 | genes_from_parent_2;
         individual_type child_2 = genes_from_parent_2 | genes_from_parent_1;
 
-        int pick = distr(generator);
-
-        return pick == 0 ? child_1 : child_2;
+        return randomBit() == 0 ? child_1 : child_2;
     }
 
     individual_type mutate(const individual_type& child) {
         double chance = 0.001;
-
-        std::random_device rand_dev;
-        std::mt19937 generator(rand_dev());
+        
         std::uniform_real_distribution<double> distr(0, 1);
         individual_type mutated_child = child;
 
@@ -159,5 +149,9 @@ private:
         }
 
         return mutated_child;
+    }
+
+    int randomBit() {
+        return bit_dist(generator);
     }
 };
