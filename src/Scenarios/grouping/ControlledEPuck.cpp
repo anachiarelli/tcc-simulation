@@ -3,58 +3,47 @@
 
 #include <enki/robots/e-puck/EPuck.h>
 #include <bitset>
+#include <unordered_map>
+#include "../../Automaton/AutomatonPlayer.cpp"
+
+using event_params = std::unordered_map<std::string, std::pair<double, double>>;
 using namespace std;
 
 class ControlledEPuck : public Enki::EPuck {
-    private:
-        bitset<32> chromosome;
-        double speed_seeing_robot[2];
-        double speed_seeing_wall[2];
+public:
+    ControlledEPuck(AutomatonPlayer* player, event_params speeds_by_event, unsigned capabilities = CAPABILITY_CAMERA)
+        : EPuck(capabilities),
+          player(player),
+          speeds_by_event(speeds_by_event) {
+        this->setColor(Enki::Color(0.0, 1.0, 0.0, 1.0));
+    }
 
-        uint64_t decodeChromosomeSegment(int begin, int length) {
-            uint64_t value = 0;
+    void controlStep(double dt) {
+        auto image = camera.image;
 
-            for (size_t i = begin; i < (begin + length); ++i) {
-                if (this->chromosome[i]) {
-                    value |= (1ULL << (i - begin));
-                }
-            }
-            return value;
+        if (image[29] == this->getColor() || image[30] == this->getColor()) {
+            this->player->dispatch("v1");
+        } else {
+            this->player->dispatch("v0");
         }
 
-        double transformChromosomeSegmentValueIntoSpeed(uint64_t value) {
-            return (-12.8 + (value * 0.1));
+        std::string action = this->player->step();
+        if (this->speeds_by_event.find(action) != this->speeds_by_event.end()) {
+            auto speeds = this->speeds_by_event[action];
+            this->leftSpeed = speeds.first;
+            this->rightSpeed = speeds.second;
+        } else {
+            // TODO: checar se o evento é mudar de velocidade ou andar na velocidade
+            // caso seja andar, o robô deve parar caso nenhum evento seja encontrado
+            // this->leftSpeed = 0.0;
+            // this->rightSpeed = 0.0;
         }
 
-        void decodeChromosome() {
-            this->speed_seeing_robot[0] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(0, 8));
-            this->speed_seeing_robot[1] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8));
-            this->speed_seeing_wall[0] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8));
-            this->speed_seeing_wall[1] = this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8));
-
-            //cout << this->speed_seeing_robot[0] << ", " << this->speed_seeing_robot[1] << "wall: " << this->speed_seeing_wall[0] << "," << this->speed_seeing_wall[1] << endl;
-        }
-
-    public:
-        ControlledEPuck(bitset<32> chromosome, unsigned capabilities = CAPABILITY_CAMERA) : EPuck(capabilities) {
-            this->chromosome = chromosome;
-            decodeChromosome();
-            this->setColor(Enki::Color(0.0, 1.0, 0.0, 1.0));
-        }
-
-        void controlStep(double dt) {
-            auto image = camera.image;
-
-            if (image[29] == this->getColor() || image[30] == this->getColor()) {
-                this->leftSpeed = this->speed_seeing_robot[0];
-                this->rightSpeed = this->speed_seeing_robot[1];
-            } else {
-                this->leftSpeed = this->speed_seeing_wall[0];
-                this->rightSpeed = this->speed_seeing_wall[1];
-            }
-
-            Enki::EPuck::controlStep(dt);
-        }
+        Enki::EPuck::controlStep(dt);
+    }
+private:
+    AutomatonPlayer* player;
+    event_params speeds_by_event;
 };
 
 #endif
