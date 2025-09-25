@@ -5,6 +5,11 @@
 #include "../../Genetics/GeneMap/GeneMap.cpp"
 #include "../../Genetics/Algorithm/GeneticAlgorithm.cpp"
 #include "../../Scenarios/grouping/GroupingEvaluator.cpp"
+#include "./ControlledEPuckFactory.cpp"
+
+const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
+const int POPULATION_SIZE = 40;
+const int SWARM_SIZE = 10;
 
 int main(int argc, char *argv[]) {
 	AutomatonFactory automaton_factory;
@@ -27,10 +32,10 @@ int main(int argc, char *argv[]) {
 	boost::dynamic_bitset<> bitmask(gene_map.getLength());
 	std::cout << "Bitmask length: " << bitmask.size() << " bits." << std::endl;
 
-	GroupingEvaluator evaluator;
-
-
-	GeneticAlgorithm algorithm = GeneticAlgorithm(40, gene_map, evaluator);
+	ControlledEPuckFactory robot_factory(automaton);
+	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE, robot_factory);
+	GroupingEvaluator evaluator(simulator, SWARM_SIZE);
+	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
 	algorithm.run();
 
 	std::cout << "Simulation finished." << std::endl;

@@ -2,9 +2,8 @@
 #include <bitset>
 using namespace std;
 
-class GeneticEPuck : public Enki::EPuck {
+class ControlledEPuck : public Enki::EPuck {
     private:
-        // TODO: Define shareable chromosome type
         bitset<32> chromosome;
         double speed_seeing_robot[2];
         double speed_seeing_wall[2];
@@ -34,7 +33,7 @@ class GeneticEPuck : public Enki::EPuck {
         }
 
     public:
-        GeneticEPuck(bitset<32> chromosome, unsigned capabilities = CAPABILITY_CAMERA) : EPuck(capabilities) {
+        ControlledEPuck(bitset<32> chromosome, unsigned capabilities = CAPABILITY_CAMERA) : EPuck(capabilities) {
             this->chromosome = chromosome;
             decodeChromosome();
             this->setColor(Enki::Color(0.0, 1.0, 0.0, 1.0));

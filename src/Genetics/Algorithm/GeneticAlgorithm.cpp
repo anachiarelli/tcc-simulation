@@ -19,15 +19,15 @@ public:
     
     void run() {
         population_type population = this->createInitialPopulation();
-        std::vector<double> fitnesses = this->evaluatePopulation(population);
+        std::vector<double> fitnesses = this->evaluatePopulation(population, 0);
         // Print fitnesses for debugging
         for (int i = 0; i < fitnesses.size(); ++i) {
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 1; i <= 100; i++) {
             population = this->createNextPopulation(population, fitnesses);
-            fitnesses = this->evaluatePopulation(population);
+            fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
             for (int j = 0; j < fitnesses.size(); ++j) {
                 std::cout << i << " " << population[j] << " Fitness: " << fitnesses[j] << std::endl;
@@ -62,11 +62,11 @@ private:
         return population;
     }
 
-    std::vector<double> evaluatePopulation(population_type population) {
+    std::vector<double> evaluatePopulation(population_type population, int generation) {
         std::vector<double> fitnesses;
 
-        for (const auto& individual : population) {
-            double fitness = this->evaluator.evaluateFitness(individual);
+        for (int i = 0; i < population.size(); ++i) {
+            double fitness = this->evaluator.evaluateFitness(population[i], i, generation);
             fitnesses.push_back(fitness);
         }
 
