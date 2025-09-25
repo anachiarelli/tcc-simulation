@@ -1,11 +1,10 @@
 #include <iostream>
+#include <boost/dynamic_bitset.hpp>
 #include "../../Automaton/AutomatonFactory.cpp"
 #include "../../Genetics/GeneMap/GeneMapBuilder.cpp"
 #include "../../Genetics/GeneMap/GeneMap.cpp"
 #include "../../Genetics/Algorithm/GeneticAlgorithm.cpp"
-#include <boost/dynamic_bitset.hpp>
-
-#include "./GA.cpp"
+#include "../../Scenarios/grouping/GroupingEvaluator.cpp"
 
 int main(int argc, char *argv[]) {
 	AutomatonFactory automaton_factory;
@@ -28,9 +27,12 @@ int main(int argc, char *argv[]) {
 	boost::dynamic_bitset<> bitmask(gene_map.getLength());
 	std::cout << "Bitmask length: " << bitmask.size() << " bits." << std::endl;
 
-	GeneticAlgorithm algorithm = GeneticAlgorithm(gene_map, 40);
+	GroupingEvaluator evaluator;
+
+
+	GeneticAlgorithm algorithm = GeneticAlgorithm(40, gene_map, evaluator);
 	algorithm.run();
-	
+
 	std::cout << "Simulation finished." << std::endl;
 	return 0;
 }
