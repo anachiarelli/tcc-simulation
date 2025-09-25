@@ -2,6 +2,9 @@
 #include <boost/dynamic_bitset.hpp>
 #include <random>
 #include <iostream>
+#include <string>
+#include <fstream>
+#include <filesystem>
 #include "../GeneMap/GeneMap.cpp"
 #include "EvaluatorInterface.cpp"
 using individual_type = boost::dynamic_bitset<>;
@@ -30,7 +33,7 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 100; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -65,14 +68,14 @@ private:
     std::vector<double> evaluatePopulation(population_type population, int generation) {
         std::vector<double> fitnesses;
 
-        string generation_str = to_string(generation);
-        generation_str = string(3 - generation_str.length(), '0') + generation_str;
-        string output_dir = "/root/simulation/output/current/" + generation_str;
+        std::string generation_str = std::to_string(generation);
+        generation_str = std::string(3 - generation_str.length(), '0') + generation_str;
+        std::string output_dir = "/root/simulation/output/current/" + generation_str;
 
-        filesystem::create_directory(output_dir);
-        ofstream fitness_file(output_dir + "/fitness.txt");
+        std::filesystem::create_directories(output_dir);
+        std::ofstream fitness_file(output_dir + "/fitness.txt");
         if (!fitness_file.is_open()) {
-            cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << endl;
+            std::cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << std::endl;
             exit(-1);
         }
 
@@ -81,7 +84,7 @@ private:
             double fitness = this->evaluator.evaluateFitness(population[i], i, generation);
             fitnesses.push_back(fitness);
 
-            fitness_file << fitness << endl;
+            fitness_file << fitness << std::endl;
             std::cout << "Individual " << i << " fitness: " << fitness << std::endl;
         }
 

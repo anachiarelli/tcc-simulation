@@ -77,12 +77,12 @@ private:
 
         // TODO: replace hardcoded params with dynamic params from GeneMap
         speeds_by_event["v0"] = std::make_pair(
-            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(4, 8, chromosome)),
-            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(12, 8, chromosome))
+            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(8, 8, chromosome)),
+            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(16, 8, chromosome))
         );
         speeds_by_event["v1"] = std::make_pair(
-            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(20, 8, chromosome)),
-            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(28, 8, chromosome))
+            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(24, 8, chromosome)),
+            this->transformChromosomeSegmentValueIntoSpeed(this->decodeChromosomeSegment(32, 8, chromosome))
         );
 
         return speeds_by_event;
