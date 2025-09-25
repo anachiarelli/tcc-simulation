@@ -1,3 +1,6 @@
+#ifndef CONTROLLEDEPUCKFACTORY_CPP
+#define CONTROLLEDEPUCKFACTORY_CPP
+
 #include <boost/dynamic_bitset.hpp>
 #include "../../Automaton/Automaton.cpp"
 #include "./ControlledEPuck.cpp"
@@ -13,3 +16,5 @@ public:
 private:
     Automaton* base_automaton;
 };
+
+#endif

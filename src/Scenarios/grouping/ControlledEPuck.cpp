@@ -1,3 +1,6 @@
+#ifndef CONTROLLEDEPUCK_CPP
+#define CONTROLLEDEPUCK_CPP
+
 #include <enki/robots/e-puck/EPuck.h>
 #include <bitset>
 using namespace std;
@@ -53,3 +56,5 @@ class ControlledEPuck : public Enki::EPuck {
             Enki::EPuck::controlStep(dt);
         }
 };
+
+#endif
