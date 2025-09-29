@@ -143,12 +143,8 @@ private:
                 right_mask.flip(i);
             }
         }
-
-        individual_type genes_from_parent_1 = parent_1 & left_mask;
-        individual_type genes_from_parent_2 = parent_2 & right_mask;
-
-        individual_type child_1 = genes_from_parent_1 | genes_from_parent_2;
-        individual_type child_2 = genes_from_parent_2 | genes_from_parent_1;
+        individual_type child_1 = (parent_1 & left_mask) | (parent_2 & right_mask);
+        individual_type child_2 = (parent_1 & right_mask) | (parent_2 & left_mask);
 
         return randomBit() == 0 ? child_1 : child_2;
     }
