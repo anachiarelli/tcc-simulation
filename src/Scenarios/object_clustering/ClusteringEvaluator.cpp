@@ -1,0 +1,117 @@
+#include "../../Genetics/Algorithm/EvaluatorInterface.cpp"
+#include <boost/dynamic_bitset.hpp>
+#include "../../Simulator/SwarmSimulator.cpp"
+#include "../../Robots/TernaryEPuckFactory.cpp"
+#include "./ClusteringDataWriter.cpp"
+#include "./ClusteringDataCollector.cpp"
+#include "enki/PhysicalEngine.h"
+
+using individual_type = boost::dynamic_bitset<>;
+using population_type = std::vector<individual_type>;
+using objects_list = std::vector<Enki::PhysicalObject*>;
+
+class ClusteringEvaluator : public EvaluatorInterface {
+public:
+	ClusteringEvaluator(SwarmSimulator *simulator, int swarm_size, int number_of_objects, TernaryEPuckFactory *robot_factory, ClusteringDataWriter *data_writer) :
+		simulator(simulator),
+		swarm_size(swarm_size),
+		number_of_objects(number_of_objects),
+		robot_factory(robot_factory),
+		data_writer(data_writer) {}
+	
+	double evaluateFitness(const individual_type& individual, int id, int generation) override {
+		population_type clones;
+
+		for (int i = 0; i < swarm_size; i++) {
+			clones.push_back(individual);
+		}
+
+		std::cout << "Evaluating " << clones.size() << " clones of individual " << id << std::endl;
+
+		std::vector<Enki::EPuck*> robots;
+		for (const auto& clone : clones) {
+			auto robot = robot_factory->buildFromChromosome(clone);
+			robots.push_back(robot);
+		}
+
+		objects_list objects;
+        for (int i = 0; i < this->number_of_objects; ++i) {
+            auto object = new Enki::PhysicalObject();
+            object->setCylindric(3.7, 5.0, 25);
+            object->setColor(Enki::Color(1.0, 0.0, 0.0, 1.0));
+            objects.push_back(object);
+        }
+
+		ClusteringDataCollector* data_collector = new ClusteringDataCollector(robots, objects);
+		simulator->simulate(robots, objects, data_collector);
+
+		std::vector<double> dispersions;
+		
+        // Objects dispersion over time
+		for (auto &step : data_collector->getObjectsData()) {
+			dispersions.push_back(calculateDispersion(step));
+		}
+
+		// TODO: the total steps should not be hardcoded
+		double cost = 0.0;
+		for (int i = 0; i < 1800; ++i) {
+            double t = i / 10.0;
+			cost += dispersions[i] * t;
+		}
+		
+		data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual);
+		data_writer->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual);
+		data_writer->writeDispersion(generation, id, dispersions, individual);
+
+		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
+		double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
+		
+		return fitness;
+	}
+
+	std::vector<double> evaluatePopulation(const population_type& population, int generation) override {
+		std::vector<double> fitness_values = EvaluatorInterface::evaluatePopulation(population, generation);
+		this->data_writer->writeFitness(generation, fitness_values);
+
+		return fitness_values;
+	}
+
+private:
+	SwarmSimulator *simulator;
+	int swarm_size;
+    int number_of_objects;
+	TernaryEPuckFactory *robot_factory;
+	ClusteringDataWriter *data_writer;
+
+	std::vector<double> findCentroid(std::vector<std::vector<double>> positions) {
+        double sum_x = 0;
+        double sum_y = 0;
+
+        for (auto it = positions.begin(); it != positions.end(); ++it) {
+            sum_x += (*it)[0];
+            sum_y += (*it)[1];
+        }
+
+        return {
+            sum_x / positions.size(),
+            sum_y / positions.size()
+        };
+    }
+
+    double calculateQuadraticDistance(std::vector<double> a, std::vector<double> b) {
+        return (pow((b[0] - a[0]), 2) + pow((b[1] - a[1]), 2));
+    }
+
+    double calculateDispersion(std::vector<std::vector<double>> positions) {
+        double normalizer = 1 / 54.76; // (1 / 4 * raio^2) raio = 3.7
+
+        std::vector<double> centroid = this->findCentroid(positions);
+
+        double quadratic_distances_sum = 0.0;
+        for (auto it = positions.begin(); it != positions.end(); ++it) {
+            quadratic_distances_sum += calculateQuadraticDistance((*it), centroid);
+        }
+        
+        return normalizer * quadratic_distances_sum;
+    }
+};

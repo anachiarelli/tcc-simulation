@@ -4,13 +4,22 @@
 #include "../../Genetics/GeneMap/GeneMapBuilder.cpp"
 #include "../../Genetics/GeneMap/GeneMap.cpp"
 #include "../../Genetics/Algorithm/GeneticAlgorithm.cpp"
-#include "../../Scenarios/grouping/GroupingEvaluator.cpp"
+#include "./ClusteringEvaluator.cpp"
 #include "../../Robots/TernaryEPuckFactory.cpp"
 #include "../../Simulator/SwarmSimulator.cpp"
 
 const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
 const int POPULATION_SIZE = 40;
-const int SWARM_SIZE = 10;
+const int SWARM_SIZE = 30;
+const int NUMBER_OF_OBJECTS = 7;
+
+std::string buildOutputDirPath() {
+	auto t = std::time(nullptr);
+	auto tm = *std::localtime(&t);
+	std::ostringstream output_dir_oss;
+	output_dir_oss << "./output/object_clustering/" << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+	return output_dir_oss.str();
+}
 
 int main(int argc, char *argv[]) {
 	AutomatonFactory automaton_factory;
@@ -32,13 +41,16 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
 
-	TernaryEPuckFactory robot_factory(automaton);
+	TernaryEPuckFactory *robot_factory = new TernaryEPuckFactory(automaton);
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE);
-	// GroupingEvaluator evaluator(simulator, SWARM_SIZE);
-	// GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
-	// std::cout << "Starting genetic algorithm..." << std::endl;
-	// algorithm.run();
 
-	// std::cout << "Simulation finished." << std::endl;
+	ClusteringDataWriter *data_writer = new ClusteringDataWriter(buildOutputDirPath());
+	ClusteringEvaluator evaluator(simulator, SWARM_SIZE, NUMBER_OF_OBJECTS, robot_factory, data_writer);
+
+	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
+	std::cout << "Starting genetic algorithm..." << std::endl;
+	algorithm.run();
+
+	std::cout << "Simulation finished." << std::endl;
 	return 0;
 }

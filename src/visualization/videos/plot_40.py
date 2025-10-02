@@ -8,10 +8,10 @@ from matplotlib.widgets import Slider
 
 
 # Parâmetros
-num_robos = 10
+num_robos = 30
 diametro_robo = 0.074  # metros (7,4 cm)
 interpolacoes_por_frame = 1  # mais = mais suave
-diretorio = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/02-10-2025 04-28-42/010/positions'  # Diretório com os arquivos de simulação
+diretorio = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/02-10-2025 05-01-50/013/positions'  # Diretório com os arquivos de simulação
 num_simulacoes = 40  # Número de simulações a exibir
 rows, cols = 5, 8  # Layout do grid (5x8 = 40)
 

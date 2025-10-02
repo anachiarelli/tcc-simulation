@@ -33,7 +33,7 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= 100; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging

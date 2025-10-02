@@ -24,13 +24,13 @@ public:
 
         if (image[29] == this->getColor() || image[30] == this->getColor()) {
             // std::cout << "Dispatching event seeing_same" << std::endl;
-            this->player->dispatch("ss");
+            this->player->dispatch("s_s");
         } else if (image[29] == this->object_color || image[30] == this->object_color) {
             // std::cout << "Dispatching event seeing_other" << std::endl;
-            this->player->dispatch("so");
+            this->player->dispatch("s_o");
         } else {
             // std::cout << "Dispatching event seeing_wall" << std::endl;
-            this->player->dispatch("sw");
+            this->player->dispatch("s_w");
         }
 
         std::string action = this->player->step();
