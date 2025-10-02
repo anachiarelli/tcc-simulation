@@ -1,12 +1,13 @@
 #include "../../Genetics/Algorithm/EvaluatorInterface.cpp"
 #include <boost/dynamic_bitset.hpp>
-#include "./SwarmSimulator.cpp"
+#include "../../Simulator/SwarmSimulator.cpp"
+#include "../../Robots/BinaryEPuckFactory.cpp"
 using individual_type = boost::dynamic_bitset<>;
 using population_type = std::vector<individual_type>;
 
 class GroupingEvaluator : public EvaluatorInterface {
 public:
-	GroupingEvaluator(SwarmSimulator *simulator, int swarm_size) : simulator(simulator), swarm_size(swarm_size) {}
+	GroupingEvaluator(SwarmSimulator *simulator, int swarm_size, BinaryEPuckFactory *robot_factory) : simulator(simulator), swarm_size(swarm_size), robot_factory(robot_factory) {}
 	double evaluateFitness(const individual_type& individual, int id, int generation) override {
 		population_type clones;
 
@@ -27,7 +28,15 @@ public:
 		string output_dir = "/root/simulation/output/current/" + generation_str;
 
 		std::cout << "Setting up output directory: " << output_dir << std::endl;
-		double cost = simulator->simulate(clones, simulation_name, output_dir);
+		std::vector<Enki::EPuck*> robots;
+		for (const auto& clone : clones) {
+			auto robot = robot_factory->buildFromChromosome(clone);
+			robots.push_back(robot);
+		}
+
+		std::vector<Enki::PhysicalObject*> objects;
+		std::cout << "Starting simulation for " << simulation_name << "..." << std::endl;
+		double cost = simulator->simulate(robots, objects, simulation_name, output_dir);
 
 		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
 		return (1.0 / (1.0 + cost));
@@ -35,4 +44,5 @@ public:
 private:
 	SwarmSimulator *simulator;
 	int swarm_size;
+	BinaryEPuckFactory *robot_factory;
 };

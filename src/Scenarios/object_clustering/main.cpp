@@ -4,8 +4,8 @@
 #include "../../Genetics/GeneMap/GeneMapBuilder.cpp"
 #include "../../Genetics/GeneMap/GeneMap.cpp"
 #include "../../Genetics/Algorithm/GeneticAlgorithm.cpp"
-#include "./GroupingEvaluator.cpp"
-#include "../../Robots/BinaryEPuckFactory.cpp"
+#include "../../Scenarios/grouping/GroupingEvaluator.cpp"
+#include "../../Robots/TernaryEPuckFactory.cpp"
 #include "../../Simulator/SwarmSimulator.cpp"
 
 const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
@@ -16,27 +16,29 @@ int main(int argc, char *argv[]) {
 	AutomatonFactory automaton_factory;
 
 	std::cout << "Loading automaton from XML..." << std::endl;
-	Automaton* automaton = automaton_factory.buildFromXMLFile("src/Scenarios/grouping/input/sync.xml");
+	Automaton* automaton = automaton_factory.buildFromXMLFile("src/Scenarios/object_clustering/input/sync.xml");
 	std::cout << "Automaton loaded successfully." << std::endl;
 
 	GeneMapBuilder gene_map_builder;
 	GeneMap gene_map = gene_map_builder.buildMapFromAutomaton(automaton);
 
 	// TODO: remove hardcoded parameters once GeneMapBuilder is updated
-	gene_map.addSection(8, "uint"); // speed v0_right
-	gene_map.addSection(8, "uint"); // speed v0_left
-	gene_map.addSection(8, "uint"); // speed v1_right
-	gene_map.addSection(8, "uint"); // speed v1_left
+	gene_map.addSection(8, "uint"); // speed v0_right -> wall
+	gene_map.addSection(8, "uint"); // speed v0_left -> wall
+	gene_map.addSection(8, "uint"); // speed v1_right -> same color robot
+	gene_map.addSection(8, "uint"); // speed v1_left -> same color robot
+	gene_map.addSection(8, "uint"); // speed v2_right -> object
+	gene_map.addSection(8, "uint"); // speed v2_left -> object
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
 
-	BinaryEPuckFactory *robot_factory = new BinaryEPuckFactory(automaton);
+	TernaryEPuckFactory robot_factory(automaton);
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE);
-	GroupingEvaluator evaluator(simulator, 1, robot_factory);
-	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
-	std::cout << "Starting genetic algorithm..." << std::endl;
-	algorithm.run();
+	// GroupingEvaluator evaluator(simulator, SWARM_SIZE);
+	// GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
+	// std::cout << "Starting genetic algorithm..." << std::endl;
+	// algorithm.run();
 
-	std::cout << "Simulation finished." << std::endl;
+	// std::cout << "Simulation finished." << std::endl;
 	return 0;
 }

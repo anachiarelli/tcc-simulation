@@ -1,17 +1,17 @@
-#ifndef CONTROLLEDEPUCK_CPP
-#define CONTROLLEDEPUCK_CPP
+#ifndef BINARYEPUCK_CPP
+#define BINARYEPUCK_CPP
 
 #include <enki/robots/e-puck/EPuck.h>
 #include <bitset>
 #include <unordered_map>
-#include "../../Automaton/AutomatonPlayer.cpp"
+#include "../Automaton/AutomatonPlayer.cpp"
 
 using event_params = std::unordered_map<std::string, std::pair<double, double>>;
 using namespace std;
 
-class ControlledEPuck : public Enki::EPuck {
+class BinaryEPuck : public Enki::EPuck {
 public:
-    ControlledEPuck(AutomatonPlayer* player, event_params speeds_by_event, unsigned capabilities = CAPABILITY_CAMERA)
+    BinaryEPuck(AutomatonPlayer* player, event_params speeds_by_event, unsigned capabilities = CAPABILITY_CAMERA)
         : EPuck(capabilities),
           player(player),
           speeds_by_event(speeds_by_event) {
@@ -22,11 +22,11 @@ public:
         auto image = camera.image;
 
         if (image[29] == this->getColor() || image[30] == this->getColor()) {
-            // std::cout << "Dispatching event v1" << std::endl;
-            this->player->dispatch("v1");
+            // std::cout << "Dispatching event s1" << std::endl;
+            this->player->dispatch("s1");
         } else {
-            // std::cout << "Dispatching event v0" << std::endl;
-            this->player->dispatch("v0");
+            // std::cout << "Dispatching event s0" << std::endl;
+            this->player->dispatch("s0");
         }
 
         std::string action = this->player->step();

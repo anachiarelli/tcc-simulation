@@ -2,8 +2,7 @@
 #define SWARMSIMULATOR_H
 
 #include <enki/PhysicalEngine.h>
-#include "./ControlledEPuckFactory.cpp"
-#include "./ControlledEPuck.cpp"
+#include <enki/robots/e-puck/EPuck.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -13,15 +12,16 @@
 #include <chrono>
 #include <boost/dynamic_bitset.hpp>
 using namespace std;
-using robots_list = vector<ControlledEPuck*>;
+using robots_list = vector<Enki::EPuck*>;
+using objects_list = vector<Enki::PhysicalObject*>;
 using individual_type = boost::dynamic_bitset<>;
 using population_type = std::vector<individual_type>;
 
 class SwarmSimulator {
 public:
-    SwarmSimulator(int world_size, ControlledEPuckFactory& robot_factory) : world_size(world_size), robot_factory(robot_factory) {}
+    SwarmSimulator(int world_size) : world_size(world_size) {}
 
-    double simulate(population_type population, string simulation_name, string output_dir) {
+    double simulate(robots_list& robots, objects_list& objects, string simulation_name, string output_dir) {
         filesystem::create_directories(output_dir + "/positions");
         filesystem::create_directories(output_dir + "/dispersions");
         
@@ -39,34 +39,32 @@ public:
         }
 
         Enki::World world(this->world_size, this->world_size);
-        robots_list robots = this->initRobots(population);
         double cost = 0.0;
+
+        this->spawnRobots(robots, world);
 
         for (auto it = robots.begin(); it != robots.end(); ++it) {
             position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
-            world.addObject(*it);
         }
         position_file << endl;
 
-        double dispersion = calculateDispersion(robots);
+        // TODO: Save object positions to file
+        this->spawnObjects(objects, world);
+        
+        double dispersion = calculateDispersion(objects);
         dispersion_file << dispersion << endl;
-
-        cout << "Starting Simulation for " << population[0] << " - Initial dispersion: " << dispersion << endl;
 
         std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
         std::chrono::steady_clock::time_point checkpoint_time;
 
         // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
         for (int i = 0; i < 1800; ++i) {
-            // std::cout << "Simulation step " << i + 1 << "/1800" << std::endl;
             world.step(0.1, 10);
             double t = i / 10.0;
 
-            dispersion = calculateDispersion(robots);
+            dispersion = calculateDispersion(objects);
             dispersion_file << dispersion << endl;
             cost += dispersion * t;
-
-            // std::cout << "Dispersion at time " << t << "s: " << dispersion << std::endl;
             
             for (auto it = robots.begin(); it != robots.end(); ++it) {
                 position_file << (*it)->pos.x << "," << (*it)->pos.y << ",";
@@ -75,7 +73,7 @@ public:
         }
         
         checkpoint_time = std::chrono::steady_clock::now();
-        cout << "Final dispersion: " << calculateDispersion(robots) << " Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(checkpoint_time - start_time).count() << "ms" << endl;
+        cout << "Final dispersion: " << calculateDispersion(objects) << " Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(checkpoint_time - start_time).count() << "ms" << endl;
 
         position_file.close();
 
@@ -83,41 +81,45 @@ public:
     }
 private:
     int world_size;
-    ControlledEPuckFactory& robot_factory;
 
-    robots_list initRobots(population_type population) {
-        robots_list robots;
-
+    void spawnRobots(robots_list& robots, Enki::World& world) {
         random_device rand_dev;
         mt19937 generator(rand_dev());
         uniform_real_distribution<double> position_distr(10, this->world_size - 10); //gauci_a
         uniform_real_distribution<double> angle_distr(-M_PI, M_PI);
 
-        for (auto it = population.begin(); it != population.end(); ++it) {
-            ControlledEPuck *robot = robot_factory.buildFromChromosome(*it);
-        
-            robot->pos = Enki::Point(position_distr(generator), position_distr(generator));
-            robot->angle = angle_distr(generator);
+        for (auto &it : robots) {
+            it->pos.x = position_distr(generator);
+            it->pos.y = position_distr(generator);
+            it->angle = angle_distr(generator);
 
-            robots.push_back(robot);
-            // std::cout << "Robot position: (" << robot->pos.x << ", " << robot->pos.y << "), angle: " << robot->angle << std::endl;
+            world.addObject(it);
         }
-        
-        return robots;
     }
 
-    Enki::Point findCentroid(robots_list robots) {
+    void spawnObjects(objects_list& objects, Enki::World& world) {
+        random_device rand_dev;
+        mt19937 generator(rand_dev());
+        uniform_real_distribution<double> position_distr(10, this->world_size - 10); //gauci_a
+
+        for (auto &it : objects) {
+            it->pos = Enki::Point(position_distr(generator), position_distr(generator));
+            world.addObject(it);
+        }
+    }
+
+    Enki::Point findCentroid(objects_list objects) {
         double sum_x = 0;
         double sum_y = 0;
 
-        for (auto it = robots.begin(); it != robots.end(); ++it) {
+        for (auto it = objects.begin(); it != objects.end(); ++it) {
             sum_x += (*it)->pos.x;
             sum_y += (*it)->pos.y;
         }
 
         return {
-            sum_x / robots.size(),
-            sum_y / robots.size()
+            sum_x / objects.size(),
+            sum_y / objects.size()
         };
     }
 
@@ -125,13 +127,13 @@ private:
         return (pow((b.x - a.x), 2) + pow((b.y - a.y), 2));
     }
 
-    double calculateDispersion(robots_list robots) {
+    double calculateDispersion(objects_list objects) {
         double normalizer = 1 / 54.76; // (1 / 4 * raio^2) raio = 3.7
 
-        Enki::Point centroid = this->findCentroid(robots);
+        Enki::Point centroid = this->findCentroid(objects);
 
         double quadratic_distances_sum = 0.0;
-        for (auto it = robots.begin(); it != robots.end(); ++it) {
+        for (auto it = objects.begin(); it != objects.end(); ++it) {
             quadratic_distances_sum += calculateQuadraticDistance((*it)->pos, centroid);
         }
         
