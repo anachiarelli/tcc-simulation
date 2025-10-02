@@ -4,12 +4,14 @@ from matplotlib.patches import Circle
 from matplotlib.animation import FuncAnimation
 import numpy as np
 import os
+from matplotlib.widgets import Slider
+
 
 # Parâmetros
 num_robos = 10
 diametro_robo = 0.074  # metros (7,4 cm)
 interpolacoes_por_frame = 1  # mais = mais suave
-diretorio = '/home/anachiarelli/projects/udesc/tcc/simulation/output/current/100/positions'  # Diretório com os arquivos de simulação
+diretorio = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/02-10-2025 04-28-42/010/positions'  # Diretório com os arquivos de simulação
 num_simulacoes = 40  # Número de simulações a exibir
 rows, cols = 5, 8  # Layout do grid (5x8 = 40)
 
@@ -33,8 +35,8 @@ for arquivo in arquivos:
         for row in reader:
             row = [float(value.strip()) for value in row if value.strip()]
             for i in range(num_robos):
-                x = row[2 * i]
-                y = row[2 * i + 1]
+                x = row[3 * i]
+                y = row[3 * i + 1]
                 trajetorias_x_raw[i].append(x)
                 trajetorias_y_raw[i].append(y)
 
@@ -68,7 +70,7 @@ for arquivo in arquivos:
 num_frames = max(num_frames_all)
 
 # Setup do grid de subplots para Full HD
-fig, axes = plt.subplots(rows, cols, figsize=(19.2, 10.8))  # 1920x1080 pixels a 100 DPI
+fig, axes = plt.subplots(rows, cols, figsize=(18, 8))  # 1920x1080 pixels a 100 DPI
 axes = axes.flatten()  # Facilita o acesso aos subplots
 cores = plt.cm.get_cmap('tab10', num_robos)
 
@@ -128,14 +130,27 @@ def update(frame):
     return elementos
 
 # Criação da animação
-ani = FuncAnimation(fig, update, frames=num_frames, interval=1, blit=True)
+# ani = FuncAnimation(fig, update, frames=num_frames, interval=1, blit=True)
+
+
+# Slider para controle de frames
+# slider deve estar em um espaço separado
+plt.subplots_adjust(bottom=0.2)  # Ajusta o espaço para o slider
+axframe = plt.axes([0.25, 0.02, 0.50, 0.02], facecolor='lightgoldenrodyellow')
+sframe = Slider(axframe, 'Frame', 0, num_frames - 1, valinit=0, valstep=1)
+
+def update_frame(val):
+    frame = int(sframe.val)
+    update(frame)
+    plt.draw()
+sframe.on_changed(update_frame)
 
 # Ajusta o layout para minimizar margens
 plt.tight_layout(pad=0.5, w_pad=0.2, h_pad=0.2)  # Reduz espaçamento entre subplots
 
-print("Salvando vídeo")
+# print("Salvando vídeo")
 # Para salvar (opcional)
-ani.save(f'gen100-40-10.mp4', fps=10, dpi=100)
+# ani.save(f'gen100-40-10.mp4', fps=10, dpi=100)
 
 # Maximiza a janela para Full HD
 # plt.get_current_fig_manager().full_screen_toggle()  # Pode variar dependendo do backend

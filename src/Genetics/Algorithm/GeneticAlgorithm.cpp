@@ -33,7 +33,7 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 1; i <= 100; i++) {
+        for (int i = 1; i <= 10; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -66,29 +66,7 @@ private:
     }
 
     std::vector<double> evaluatePopulation(population_type population, int generation) {
-        std::vector<double> fitnesses;
-
-        std::string generation_str = std::to_string(generation);
-        generation_str = std::string(3 - generation_str.length(), '0') + generation_str;
-        std::string output_dir = "/root/simulation/output/current/" + generation_str;
-
-        std::filesystem::create_directories(output_dir);
-        std::ofstream fitness_file(output_dir + "/fitness.txt");
-        if (!fitness_file.is_open()) {
-            std::cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << std::endl;
-            exit(-1);
-        }
-
-        for (int i = 0; i < population.size(); ++i) {
-            std::cout << "Evaluating individual " << i << " of generation " << generation << std::endl;
-            double fitness = this->evaluator.evaluateFitness(population[i], i, generation);
-            fitnesses.push_back(fitness);
-
-            fitness_file << fitness << std::endl;
-            std::cout << "Individual " << i << " fitness: " << fitness << std::endl;
-        }
-
-        return fitnesses;
+        return this->evaluator.evaluatePopulation(population, generation);
     }
 
     population_type createNextPopulation(population_type current_population, std::vector<double> evaluation_result) {
