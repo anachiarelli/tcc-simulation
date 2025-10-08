@@ -8,10 +8,10 @@
 #include "../../Robots/TernaryEPuckFactory.cpp"
 #include "../../Simulator/SwarmSimulator.cpp"
 
-const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
-const int POPULATION_SIZE = 40;
-const int SWARM_SIZE = 30;
-const int NUMBER_OF_OBJECTS = 7;
+const int WORLD_SIZE = 112; // The objects and the robots were initialized with a uniform distribution in a virtual square of sides 111.80 cm
+const int POPULATION_SIZE = 10; // In each generation, each of the λ = 10 candidate solutions (i.e. controllers) was evaluated by running it for 100 s on
+const int SWARM_SIZE = 2; // n = 2 robots in an environment containing
+const int NUMBER_OF_OBJECTS = 5; // m = 5 objects.
 
 std::string buildOutputDirPath() {
 	auto t = std::time(nullptr);

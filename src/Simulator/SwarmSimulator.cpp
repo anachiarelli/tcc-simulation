@@ -35,7 +35,8 @@ public:
         std::chrono::steady_clock::time_point checkpoint_time;
 
         // 1800 steps at 10 steps/sec = 180s (GAUCI_a)
-        for (int i = 0; i < 1800; ++i) {
+        // Clustering: In each generation, each of the λ = 10 candidate solutions (i.e. controllers) was evaluated by running it for 100 s
+        for (int i = 0; i < 1000; ++i) {
             world.step(0.1, 10);
 
             data_collector->collect();

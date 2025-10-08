@@ -37,7 +37,8 @@ public:
 		objects_list objects;
         for (int i = 0; i < this->number_of_objects; ++i) {
             auto object = new Enki::PhysicalObject();
-            object->setCylindric(3.7, 5.0, 25);
+            object->setCylindric(5.0, 10.0, 35.0); // These cylinders have a diameter and a height of 10 cm. Their mass is approximately 35 g
+			object->dryFrictionCoefficient = 0.58; // and their coefficient of static friction with the floor of our arena is approximately 0.58.
             object->setColor(Enki::Color(1.0, 0.0, 0.0, 1.0));
             objects.push_back(object);
         }
@@ -52,9 +53,9 @@ public:
 			dispersions.push_back(calculateDispersion(step));
 		}
 
-		// TODO: the total steps should not be hardcoded
+		// TODO: the total steps should not be hardcoded ---> Across 10 systematic experiments with 5 robots and 20 objects, on average, 86.5% of the objects were in one cluster after 10 minutes
 		double cost = 0.0;
-		for (int i = 0; i < 1800; ++i) {
+		for (int i = 0; i < 1000; ++i) {
             double t = i / 10.0;
 			cost += dispersions[i] * t;
 		}
@@ -62,7 +63,13 @@ public:
 		data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual);
 		data_writer->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual);
 		data_writer->writeDispersion(generation, id, dispersions, individual);
-
+		delete(data_collector);
+		// for (auto &robot : robots) {
+		// 	delete(robot);
+		// }
+		// for (auto &object : objects) {
+		// 	delete(object);
+		// }
 		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
 		double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
 		

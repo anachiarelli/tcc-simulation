@@ -11,7 +11,7 @@ num_objects = 7
 diameter_robot = 0.074
 diameter_object = 0.074
 interpolations_per_frame = 1
-base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/02-10-2025 06-46-50/013/positions'
+base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/02-10-2025 15-33-51/000/positions'
 robots_dir = base_dir + '/robots'
 objects_dir = base_dir + '/objects'
 num_simulations = 40
@@ -117,9 +117,10 @@ for robot_file, object_file in zip(robot_files, object_files):
 # Determine the maximum number of frames among all simulations
 num_frames = max(num_frames_all)
 
-# Setup subplot grid for Full HD
 fig, axes = plt.subplots(rows, cols, figsize=(18, 8))  # 1920x1080 pixels at 100 DPI
 axes = axes.flatten()  # Eases access to subplots
+# Reserve space at the bottom for the slider
+fig.subplots_adjust(bottom=0.12)
 robot_colors = lambda i: 'blue'
 object_colors = lambda i: 'red'
 
@@ -143,8 +144,8 @@ for ax in axes:
     ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
     ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
 
-# Add slider for frame control
-ax_slider = plt.axes([0.2, 0.02, 0.6, 0.03], facecolor='lightgoldenrodyellow')
+# Add slider for frame control in a dedicated space below the plots
+ax_slider = fig.add_axes([0.2, 0.03, 0.6, 0.04], facecolor='lightgoldenrodyellow')
 frame_slider = Slider(ax_slider, 'Frame', 0, num_frames - 1, valinit=0, valstep=1)
 
 # Configure each subplot
@@ -162,9 +163,9 @@ for sim_idx, ax in enumerate(axes):
         robot_markers = []
         robot_circles = []
         for i in range(num_robots):
-            line, = ax.plot([], [], color='blue', lw=1)
-            marker, = ax.plot([], [], 'o', color='blue', markersize=4)
-            circle = Circle((0, 0), diameter_robot/2, color='blue', alpha=0.3)
+            line, = ax.plot([], [], color='blue', lw=0.5)
+            marker, = ax.plot([], [], 'o', color='blue', markeredgecolor='black', markeredgewidth=1, markersize=4)
+            circle = Circle((0, 0), diameter_robot/2, color='blue', edgecolor='black', linewidth=1, alpha=0.3)
             ax.add_patch(circle)
             robot_lines.append(line)
             robot_markers.append(marker)
@@ -178,9 +179,9 @@ for sim_idx, ax in enumerate(axes):
         object_markers = []
         object_circles = []
         for i in range(num_objects):
-            line, = ax.plot([], [], color='red', lw=1, linestyle='--')
-            marker, = ax.plot([], [], 's', color='red', markersize=6)
-            circle = Circle((0, 0), diameter_object/2, color='red', alpha=0.3)
+            line, = ax.plot([], [], color='red', lw=0.5, linestyle='--')
+            marker, = ax.plot([], [], 's', color='red', markeredgecolor='black', markeredgewidth=1, markersize=6)
+            circle = Circle((0, 0), diameter_object/2, color='red', edgecolor='black', linewidth=1, alpha=0.3)
             ax.add_patch(circle)
             object_lines.append(line)
             object_markers.append(marker)
