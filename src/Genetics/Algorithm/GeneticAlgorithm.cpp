@@ -33,8 +33,8 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        // Clustering: Each evolution was run for 1000 generations.
-        for (int i = 1; i <= 1000; i++) {
+        // Clustering: Each evolution was run for 1000 generations. (GAUCI)
+        for (int i = 1; i <= 200; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -129,7 +129,7 @@ private:
     }
 
     individual_type mutate(const individual_type& child) {
-        double chance = 0.01;
+        double chance = 0.005;
         
         std::uniform_real_distribution<double> distr(0, 1);
         individual_type mutated_child = child;

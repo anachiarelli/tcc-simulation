@@ -5,6 +5,7 @@
 #include "./ClusteringDataWriter.cpp"
 #include "./ClusteringDataCollector.cpp"
 #include "enki/PhysicalEngine.h"
+#include <cmath>
 
 using individual_type = boost::dynamic_bitset<>;
 using population_type = std::vector<individual_type>;
@@ -29,51 +30,55 @@ public:
 		std::cout << "Evaluating " << clones.size() << " clones of individual " << id << std::endl;
 
 		std::vector<Enki::EPuck*> robots;
-		for (const auto& clone : clones) {
-			auto robot = robot_factory->buildFromChromosome(clone);
-			robots.push_back(robot);
-		}
-
 		objects_list objects;
-        for (int i = 0; i < this->number_of_objects; ++i) {
-            auto object = new Enki::PhysicalObject();
-            object->setCylindric(5.0, 10.0, 35.0); // These cylinders have a diameter and a height of 10 cm. Their mass is approximately 35 g
-			object->dryFrictionCoefficient = 0.58; // and their coefficient of static friction with the floor of our arena is approximately 0.58.
-            object->setColor(Enki::Color(1.0, 0.0, 0.0, 1.0));
-            objects.push_back(object);
-        }
-
-		ClusteringDataCollector* data_collector = new ClusteringDataCollector(robots, objects);
-		simulator->simulate(robots, objects, data_collector);
-
+		std::vector<double> all_fitness;
 		std::vector<double> dispersions;
-		
-        // Objects dispersion over time
-		for (auto &step : data_collector->getObjectsData()) {
-			dispersions.push_back(calculateDispersion(step));
+		ClusteringDataCollector* data_collector;
+
+		for (int i = 0; i < 10; ++i) { // 10 runs per individual
+
+			for (const auto& clone : clones) {
+				auto robot = robot_factory->buildFromChromosome(clone);
+				robots.push_back(robot);
+			}
+
+			for (int j = 0; j < this->number_of_objects; ++j) {
+				auto object = new Enki::PhysicalObject();
+				object->setCylindric(5.0, 10.0, 35.0); // These cylinders have a diameter and a height of 10 cm. Their mass is approximately 35 g
+				object->dryFrictionCoefficient = 0.58; // and their coefficient of static friction with the floor of our arena is approximately 0.58.
+				object->setColor(Enki::Color(1.0, 0.0, 0.0, 1.0));
+				objects.push_back(object);
+			}
+			
+			data_collector = new ClusteringDataCollector(robots, objects);
+			simulator->simulate(robots, objects, data_collector);
+			
+			// Objects dispersion over time
+			for (auto &step : data_collector->getObjectsData()) {
+				dispersions.push_back(calculateDispersion(step));
+			}
+
+			// TODO: the total steps should not be hardcoded ---> Across 10 systematic experiments with 5 robots and 20 objects, on average, 86.5% of the objects were in one cluster after 10 minutes
+			double cost = 0.0;
+			for (int i = 0; i < 1000; ++i) {
+				double t = i / 10.0;
+				cost += dispersions[i] * t;
+			}
+
+			data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual, i);
+			data_writer->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual, i);
+			data_writer->writeDispersion(generation, id, dispersions, individual, i);
+			double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
+			all_fitness.push_back(fitness);
+
+			delete(data_collector);
+			dispersions.clear();
+
+			robots.clear();
+			objects.clear();
 		}
 
-		// TODO: the total steps should not be hardcoded ---> Across 10 systematic experiments with 5 robots and 20 objects, on average, 86.5% of the objects were in one cluster after 10 minutes
-		double cost = 0.0;
-		for (int i = 0; i < 1000; ++i) {
-            double t = i / 10.0;
-			cost += dispersions[i] * t;
-		}
-		
-		data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual);
-		data_writer->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual);
-		data_writer->writeDispersion(generation, id, dispersions, individual);
-		delete(data_collector);
-		// for (auto &robot : robots) {
-		// 	delete(robot);
-		// }
-		// for (auto &object : objects) {
-		// 	delete(object);
-		// }
-		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
-		double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
-		
-		return fitness;
+		return std::accumulate(all_fitness.begin(), all_fitness.end(), 0.0) / all_fitness.size();		
 	}
 
 	std::vector<double> evaluatePopulation(const population_type& population, int generation) override {

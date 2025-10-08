@@ -5,23 +5,44 @@ import numpy as np
 import os
 from matplotlib.animation import FuncAnimation, FFMpegWriter
 
-# Configuration (copy from plot_last_frame_100.py as needed)
+"""
+plot_frames_video_run0.py
+
+Duplicate of plot_frames_video_gen999.py but only includes files that end with
+run_0.csv (i.e. the first run for each individual). Change `run_index` below
+to include a different run (e.g. 1 for run_1.csv).
+
+Place this file next to the original and run it to generate the MP4.
+"""
+
+# Configuration (mirrors the original script)
 num_robots = 2
 num_objects = 5
 diameter_robot = 7.4
 diameter_object = 10.0
-base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 16-19-29/700/positions'
+base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 17-46-37/080/positions'
 robots_dir = base_dir + '/robots'
 objects_dir = base_dir + '/objects'
 num_simulations = 10
 rows, cols = 2, 5
 
+# Which run index to include in the video (0 -> run_0.csv)
+run_index = 0
+
 # Video parameters
 fps = 10  # frames per second in output video
 seconds_per_frame = 1  # how many seconds of simulation time correspond to one plotted frame
 
-robot_files = [f for f in sorted(os.listdir(robots_dir))][:num_simulations]
-object_files = [f for f in sorted(os.listdir(objects_dir))][:num_simulations]
+# helper to accept filenames that end with run_n.csv
+def filter_run_files(files, prefix_filter=None):
+    # files: list of filenames
+    # prefix_filter: if provided, ensures filename contains this prefix before run
+    run_suffix = f"run_{run_index}.csv"
+    selected = [f for f in sorted(files) if f.endswith(run_suffix)]
+    return selected[:num_simulations]
+
+robot_files = filter_run_files(os.listdir(robots_dir))
+object_files = filter_run_files(os.listdir(objects_dir))
 
 # Read all data
 robot_trajectories_x_all = []
@@ -62,9 +83,7 @@ for robot_file, object_file in zip(robot_files, object_files):
 # Determine total frames to animate: use max number of frames across simulations
 total_sim_frames = max(num_frames_all) if num_frames_all else 0
 
-# Map simulation frames to video frames: if CSV rows correspond to 1Hz samples, then
-# each simulation frame is one second. We will produce one video frame per simulation frame
-# but allow fps>1 by duplicating frames (writer fps controls playback speed).
+# Map simulation frames to video frames
 video_frames = total_sim_frames
 
 fig, axes = plt.subplots(rows, cols, figsize=(20, 20))
@@ -89,7 +108,6 @@ for sim_idx, ax in enumerate(axes):
         # create artists: path lines and Circle patches sized in cm
         for i in range(num_robots):
             line, = ax.plot([], [], color='blue', lw=0.5)
-            # Circle radius in data units (cm): diameter_robot/2
             circle = Circle((0, 0), diameter_robot / 2.0, facecolor='black', edgecolor='blue', linewidth=1.0, alpha=1.0)
             ax.add_patch(circle)
             artists['robot_lines'].append(line)
@@ -139,7 +157,7 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=video_frames, blit=False)
 
 # Check ffmpeg availability when saving
-output_file = os.path.join(os.path.dirname(__file__), 'object_clustering_all_seconds_gen700.mp4')
+output_file = os.path.join(os.path.dirname(__file__), f'MEAN_VALUE_object_clustering_run{run_index}_gen080.mp4')
 try:
     writer = FFMpegWriter(fps=fps)
     ani.save(output_file, writer=writer, dpi=100)

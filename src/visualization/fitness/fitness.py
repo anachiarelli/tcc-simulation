@@ -3,7 +3,7 @@ import statistics
 from pathlib import Path
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/current')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 17-46-37')
 
 fitnesses_by_generation = []
 
@@ -16,7 +16,10 @@ generations.sort()
 
 for generation in generations:
     fitnesses = []
-    with (base_dir / generation / 'fitness.txt').open() as fitness_file:
+    if not (base_dir / generation / 'fitness.csv').is_file():
+        generations = generations[:generations.index(generation)]
+        break
+    with (base_dir / generation / 'fitness.csv').open() as fitness_file:
         for row in fitness_file:
             fitnesses.append(float(row))
     fitnesses.sort()
@@ -46,5 +49,5 @@ plt.xlim([-0.5, len(generations)])  # Adjust x-axis limits
 plt.tight_layout()  # Adjust layout to prevent label cutoff
 
 # Save and clear the plot
-plt.savefig('fitness_by_generation.png')
+plt.savefig('fitness_clustering.png')
 plt.clf()
