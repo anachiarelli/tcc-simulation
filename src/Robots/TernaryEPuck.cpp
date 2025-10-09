@@ -11,12 +11,11 @@ using namespace std;
 
 class TernaryEPuck : public Enki::EPuck {
 public:
-    TernaryEPuck(AutomatonPlayer* player, event_params speeds_by_event, Enki::Color epuck_color, Enki::Color object_color, unsigned capabilities = CAPABILITY_CAMERA)
+    TernaryEPuck(AutomatonPlayer* player, event_params speeds_by_event, Enki::Color epuck_color, unsigned capabilities = CAPABILITY_CAMERA)
         : EPuck(capabilities),
           player(player),
           speeds_by_event(speeds_by_event) {
         this->setColor(epuck_color);
-        this->object_color = object_color;
     }
 
     void controlStep(double dt) {
@@ -25,12 +24,12 @@ public:
         if (image[29] == this->getColor() || image[30] == this->getColor()) {
             // std::cout << "Dispatching event seeing_same" << std::endl;
             this->player->dispatch("s_s");
-        } else if (image[29] == this->object_color || image[30] == this->object_color) {
-            // std::cout << "Dispatching event seeing_other" << std::endl;
-            this->player->dispatch("s_o");
-        } else {
+        } else if (image[29] == Enki::Color::gray || image[30] == Enki::Color::gray) {
             // std::cout << "Dispatching event seeing_wall" << std::endl;
             this->player->dispatch("s_w");
+        } else {
+            // std::cout << "Dispatching event seeing_other" << std::endl;
+            this->player->dispatch("s_o");
         }
 
         std::string action = this->player->step();
@@ -51,7 +50,6 @@ public:
 private:
     AutomatonPlayer* player;
     event_params speeds_by_event;
-    Enki::Color object_color;
 };
 
 #endif

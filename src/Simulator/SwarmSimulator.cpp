@@ -43,7 +43,7 @@ public:
         }
         
         checkpoint_time = std::chrono::steady_clock::now();
-        // std::cout << " Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(checkpoint_time - start_time).count() << "ms" << std::endl;
+        std::cout << " Time taken: " << std::chrono::duration_cast<std::chrono::milliseconds>(checkpoint_time - start_time).count() << "ms" << std::endl;
     }
 private:
     int world_size;

@@ -10,9 +10,10 @@ num_robots = 2
 num_objects = 5
 diameter_robot = 7.4
 diameter_object = 10.0
-generation = '199'
+world_size = 112  # in cm, should match simulation setup
+generation = '000'
 
-base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 19-52-47/' + generation + '/positions'
+base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 21-18-58/' + generation + '/positions'
 robots_dir = base_dir + '/robots'
 objects_dir = base_dir + '/objects'
 num_simulations = 10
@@ -88,8 +89,8 @@ axes = axes.flatten()
 plot_artists = []
 for sim_idx, ax in enumerate(axes):
     # axis limits are in centimeters
-    ax.set_xlim(0, 112)
-    ax.set_ylim(0, 112)
+    ax.set_xlim(0, world_size)
+    ax.set_ylim(0, world_size)
     ax.set_aspect('equal')
     for spine in ax.spines.values():
         spine.set_visible(True)

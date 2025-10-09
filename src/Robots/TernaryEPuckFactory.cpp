@@ -22,8 +22,7 @@ public:
         event_params speeds_by_event = this->buildSpeedsByEventFromChromosome(chromosome);
         // std::cout << "Building TernaryEPuck." << std::endl;
         Enki::Color epuck_color = Enki::Color(0.0, 0.0, 1.0, 1.0);
-        Enki::Color object_color = Enki::Color(1.0, 0.0, 0.0, 1.0);
-        return new TernaryEPuck(player, speeds_by_event, epuck_color, object_color);
+        return new TernaryEPuck(player, speeds_by_event, epuck_color);
     }
 
 private:
