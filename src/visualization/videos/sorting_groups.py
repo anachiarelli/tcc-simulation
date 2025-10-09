@@ -1,6 +1,6 @@
 import csv
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, FancyArrowPatch
+from matplotlib.patches import Circle
 import numpy as np
 import os
 from matplotlib.animation import FuncAnimation, FFMpegWriter
@@ -15,9 +15,10 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 num_robots = 30
 diameter_robot = 7.4
 world_size = 450  # in cm, should match simulation setup
-generation = '022'
+generation = '023'
+simulation_timestamp = '09-10-2025 04-37-04'
 
-base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/09-10-2025 01-50-14/' + generation + '/positions'
+base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/' + simulation_timestamp + '/' + generation + '/positions'
 robots_dir = base_dir + '/robots'
 num_simulations = 10
 rows, cols = 2, 5
@@ -106,16 +107,45 @@ for sim_rgb in robot_trajectories_rgb_all:
 
 if rgb_detect:
     if global_max <= 1.01:
+        # values already in 0-1
         rgb_0_255 = False
+        rgb_divisor = 1.0
         print(f"Detected RGB in 0-1 range (global_max={global_max}). Using rgb_0_255=False")
     else:
+        # treat as 0-255
         rgb_0_255 = True
+        rgb_divisor = 255.0
         print(f"Detected RGB in 0-255 range (global_max={global_max}). Using rgb_0_255=True")
 else:
-    print(f"Auto-detect disabled: using rgb_0_255={rgb_0_255}")
+    # respect the manual rgb_0_255 flag; choose divisor accordingly
+    if rgb_0_255:
+        rgb_divisor = 255.0
+    else:
+        rgb_divisor = 1.0
+    print(f"Auto-detect disabled: using rgb_0_255={rgb_0_255}, rgb_divisor={rgb_divisor}")
+    
 
 total_sim_frames = max(num_frames_all) if num_frames_all else 0
 video_frames = total_sim_frames
+
+# Compute a fixed color per robot (use first available RGB sample) so robots
+# keep distinct, consistent colors across the whole animation.
+robot_fixed_colors_all = []
+for sim_rgb in robot_trajectories_rgb_all:
+    sim_fixed = []
+    r_lists, g_lists, b_lists = sim_rgb
+    for i in range(num_robots):
+        # find first frame with data for this robot
+        r0 = r_lists[i][0] if r_lists[i] else 0.0
+        g0 = g_lists[i][0] if g_lists[i] else 0.0
+        b0 = b_lists[i][0] if b_lists[i] else 0.0
+        # normalize according to divisor (handles 0-1, 0-11, 0-255)
+        r_n = float(r0) / rgb_divisor
+        g_n = float(g0) / rgb_divisor
+        b_n = float(b0) / rgb_divisor
+        # clip to [0,1]
+        sim_fixed.append((np.clip(r_n, 0.0, 1.0), np.clip(g_n, 0.0, 1.0), np.clip(b_n, 0.0, 1.0)))
+    robot_fixed_colors_all.append(sim_fixed)
 
 # Create Full HD figure (1920x1080). figsize is in inches; use 1920/100 x 1080/100 with dpi=100 for 1920x1080 pixels
 fig_dpi = 100
@@ -136,21 +166,14 @@ for sim_idx, ax in enumerate(axes):
     ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True, labelsize=8)
     ax.set_title(str(sim_idx), fontsize=12, pad=8, loc='center')
-    artists = {'robot_lines': [], 'robot_circles': [], 'robot_arrows': []}
+    artists = {'robot_circles': []}
     if sim_idx < len(robot_files):
         for i in range(num_robots):
-            # path line (will be colored by robot's current color each frame)
-            line, = ax.plot([], [], color='k', lw=1.0)
-            # initial circle with neutral color; will be updated each frame
-            circle = Circle((0, 0), diameter_robot / 2.0, facecolor='gray', edgecolor='black', linewidth=1.2, alpha=1.0)
+            # initial circle with fixed robot color (no trajectory line)
+            fixed_color = robot_fixed_colors_all[sim_idx][i] if sim_idx < len(robot_fixed_colors_all) else (0.5, 0.5, 0.5)
+            circle = Circle((0, 0), diameter_robot / 2.0, facecolor=fixed_color, edgecolor=fixed_color, linewidth=1.0, alpha=0.95)
             ax.add_patch(circle)
-            # arrow (heading) — color updated per frame
-            arrow_len = diameter_robot * 1.6
-            arrow = FancyArrowPatch((0, 0), (arrow_len, 0), color='gray', linewidth=1.4, arrowstyle='-|>', mutation_scale=16)
-            ax.add_patch(arrow)
-            artists['robot_lines'].append(line)
             artists['robot_circles'].append(circle)
-            artists['robot_arrows'].append(arrow)
     plot_artists.append(artists)
 
 def normalize_rgb(r, g, b):
@@ -174,35 +197,19 @@ def update(frame):
                 gs = robot_trajectories_rgb_all[sim_idx][1][i]
                 bs = robot_trajectories_rgb_all[sim_idx][2][i]
                 idx = min(frame, len(xs) - 1)
-                # update path
-                artists['robot_lines'][i].set_data(xs[:idx + 1], ys[:idx + 1])
                 x_last = xs[idx]
                 y_last = ys[idx]
                 artists['robot_circles'][i].center = (x_last, y_last)
-                # get color for this frame
-                r = rs[idx] if idx < len(rs) else rs[-1] if rs else 0.0
-                g = gs[idx] if idx < len(gs) else gs[-1] if gs else 0.0
-                b = bs[idx] if idx < len(bs) else bs[-1] if bs else 0.0
-                color = normalize_rgb(r, g, b)
-                # update circle colors
-                artists['robot_circles'][i].set_facecolor(color)
-                artists['robot_circles'][i].set_edgecolor(color)
-                # update path line color to match robot
+                # use fixed per-robot color (computed from first frame) for consistency
                 try:
-                    artists['robot_lines'][i].set_color(color)
+                    fixed_color = robot_fixed_colors_all[sim_idx][i]
                 except Exception:
-                    # defensive: if line artist isn't present or doesn't accept color, ignore
-                    pass
-                # update arrow: position and color
-                if len(thetas) > idx:
-                    theta = thetas[idx]
-                else:
-                    theta = thetas[-1] if thetas else 0.0
-                arrow_len = diameter_robot * 1.0
-                dx = arrow_len * np.cos(theta)
-                dy = arrow_len * np.sin(theta)
-                artists['robot_arrows'][i].set_positions((x_last, y_last), (x_last + dx, y_last + dy))
-                artists['robot_arrows'][i].set_color(color)
+                    fixed_color = (0.5, 0.5, 0.5)
+                # update circle colors (keep fixed)
+                artists['robot_circles'][i].set_facecolor(fixed_color)
+                artists['robot_circles'][i].set_edgecolor(fixed_color)
+                # no trajectory lines to update; only circles are updated
+                # No arrow/heading patch: we intentionally omit drawing headings
     return []
 
 ani = FuncAnimation(fig, update, frames=video_frames, blit=False)

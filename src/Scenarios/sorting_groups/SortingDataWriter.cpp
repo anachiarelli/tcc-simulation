@@ -30,6 +30,7 @@ public:
         }
 
         for (const auto& step_data : robots_data) {
+            // std::cout << "Step data size: " << step_data.size() << std::endl;
             for (const auto& robot_data : step_data) {
                 file << robot_data[0] << "," << robot_data[1] << "," << robot_data[2] << "," << robot_data[3] << "," << robot_data[4] << "," << robot_data[5] << ",";
             }

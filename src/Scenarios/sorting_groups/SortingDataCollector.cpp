@@ -13,6 +13,7 @@ public:
     void collect() override {
         std::vector<std::vector<double>> robot_step_data;
         std::vector<std::vector<double>> object_step_data;
+        // std::cout << "this->robots size" << this->robots.size() << std::endl;
         
         for (auto &robot : this->robots) {
             robot_step_data.push_back({robot->pos.x, robot->pos.y, robot->angle, robot->getColor().r(), robot->getColor().g(), robot->getColor().b()});
