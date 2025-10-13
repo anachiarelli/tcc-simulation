@@ -129,7 +129,7 @@ private:
     }
 
     individual_type mutate(const individual_type& child) {
-        double chance = 0.005;
+        double chance = 0.001;
         
         std::uniform_real_distribution<double> distr(0, 1);
         individual_type mutated_child = child;

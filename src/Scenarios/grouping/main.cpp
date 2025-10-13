@@ -11,7 +11,7 @@
 #include "./GroupingDataWriter.cpp"
 
 const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
-const int POPULATION_SIZE = 40;
+const int POPULATION_SIZE = 10;
 const int SWARM_SIZE = 30;
 
 std::string buildOutputDirPath() {

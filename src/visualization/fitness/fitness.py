@@ -3,7 +3,7 @@ import statistics
 from pathlib import Path
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 17-46-37')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/12-10-2025 15-23-11')
 
 fitnesses_by_generation = []
 
@@ -28,23 +28,27 @@ for generation in generations:
 average_fitness_by_generation = [statistics.mean(fitnesses) for fitnesses in fitnesses_by_generation]
 maximum_fitness_by_generation = [max(fitnesses) for fitnesses in fitnesses_by_generation]
 
-# Grouped bar chart setup
+# Line chart setup
 plt.figure(figsize=(10, 6))  # Adjust figure size for better visibility
-bar_width = 0.35  # Width of each bar
 index = np.arange(len(generations))  # X-axis indices for generations
 
-# Plot bars for maximum and average fitness side by side
-plt.bar(index, maximum_fitness_by_generation, bar_width, label='Melhor fitness')
-plt.bar(index + bar_width, average_fitness_by_generation, bar_width, label='Média')
+# Plot lines for maximum and average fitness
+plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Melhor fitness')
+plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Média')
 
 # Customize the plot
 plt.title('Fitness por Geração')
 plt.xlabel('Geração')
 plt.ylabel('Fitness')
-plt.xticks(index + bar_width / 2, [int(generation) + 1 for generation in generations])  # Center x-ticks under grouped bars
+# Use generation numbers (1-based) as x-tick labels
+try:
+    xtick_labels = [int(generation) + 1 for generation in generations]
+except Exception:
+    xtick_labels = generations
+plt.xticks(index, xtick_labels)
 plt.legend()
 plt.grid(True, axis='y')  # Grid only on y-axis for clarity
-plt.xlim([-0.5, len(generations)])  # Adjust x-axis limits
+plt.xlim([-0.5, max(len(generations) - 0.5, 0)])  # Adjust x-axis limits
 # plt.ylim([0, 3000])  # Uncomment if you want to set a specific y-axis limit
 plt.tight_layout()  # Adjust layout to prevent label cutoff
 

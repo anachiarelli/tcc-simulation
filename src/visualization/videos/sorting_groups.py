@@ -15,8 +15,8 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 num_robots = 30
 diameter_robot = 7.4
 world_size = 450  # in cm, should match simulation setup
-generation = '023'
-simulation_timestamp = '09-10-2025 04-37-04'
+generation = '200'
+simulation_timestamp = '12-10-2025 15-23-11'
 
 base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/' + simulation_timestamp + '/' + generation + '/positions'
 robots_dir = base_dir + '/robots'
