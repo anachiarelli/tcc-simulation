@@ -20,7 +20,7 @@ public:
         generator = std::mt19937(rand_dev());
     }
     
-    void run() {
+    individual_type run() {
         population_type population = this->createInitialPopulation();
         std::cout << "Initial population created." << std::endl;
         // for (const auto& individual : population) {
@@ -33,8 +33,9 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
+        int num_generations = 200;
         // Clustering: Each evolution was run for 1000 generations. (GAUCI)
-        for (int i = 1; i <= 200; i++) {
+        for (int i = 1; i <= num_generations; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -42,6 +43,14 @@ public:
                 std::cout << i << " " << population[j] << " Fitness: " << fitnesses[j] << std::endl;
             }
         }
+
+        int best_index = 0;
+        for (int i = 0; i < fitnesses.size(); ++i) {
+            if (fitnesses[best_index] < fitnesses[i]) {
+                best_index = i;
+            }
+        }
+        return population[best_index];
     }
 
 private:
@@ -129,7 +138,7 @@ private:
     }
 
     individual_type mutate(const individual_type& child) {
-        double chance = 0.001;
+        double chance = 0.0001;
         
         std::uniform_real_distribution<double> distr(0, 1);
         individual_type mutated_child = child;

@@ -8,11 +8,17 @@ class State {
     int id;
     std::string name;
     bool is_initial;
+    bool is_marked;
+    int x;
+    int y;
     public:
-        State(int id, std::string name, bool is_initial) : id(id), name(name), is_initial(is_initial) {}
+        State(int id, std::string name, bool is_initial, bool is_marked, int x, int y) : id(id), name(name), is_initial(is_initial), is_marked(is_marked), x(x), y(y) {}
         int getId() const { return id; }
         std::string getName() const { return name; }
-        bool isInitial() const { return is_initial; }    
+        bool isInitial() const { return is_initial; }
+        bool isMarked()  const { return is_marked; }
+        int getX() const { return x; }
+        int getY() const { return y; }
 };
 
 /* class EventParam {
@@ -27,12 +33,14 @@ class State {
     int id;
     std::string name;
     bool is_controllable;
+    bool is_observable;
     // std::vector<EventParam> event_params;
     public:
-        Event(int id, std::string name, bool is_controllable) : id(id), name(name), is_controllable(is_controllable) {}
+        Event(int id, std::string name, bool is_controllable, bool is_observable) : id(id), name(name), is_controllable(is_controllable), is_observable(is_observable) {}
         int getId() const { return id; }
         std::string getName() const { return name; }
         bool isControllable() const { return is_controllable; }
+        bool isObservable() const { return is_observable; }
 };
 
 class Transition {
@@ -45,6 +53,7 @@ class Transition {
         State* getTarget() const { return target; }
         Event* getEvent() const { return event; }
         bool isControllable() const { return event->isControllable(); }
+        bool isObservable() const { return event->isObservable(); }
 };
 
 class Automaton {

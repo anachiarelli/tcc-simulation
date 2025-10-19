@@ -3,7 +3,7 @@ import statistics
 from pathlib import Path
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/12-10-2025 15-23-11')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/19-10-2025 16-14-15')
 
 fitnesses_by_generation = []
 
@@ -53,5 +53,5 @@ plt.xlim([-0.5, max(len(generations) - 0.5, 0)])  # Adjust x-axis limits
 plt.tight_layout()  # Adjust layout to prevent label cutoff
 
 # Save and clear the plot
-plt.savefig('fitness_clustering.png')
+plt.savefig('fitness.png')
 plt.clf()

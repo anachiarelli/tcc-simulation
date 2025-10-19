@@ -12,11 +12,11 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 # All robots are drawn with the same blue color.
 
 # Configuration (edit as needed)
-num_robots = 30
+num_robots = 10
 diameter_robot = 7.4
 world_size = 316  # in cm, should match simulation setup
-generation = '035'
-simulation_timestamp = '13-10-2025 15-11-17'
+generation = '100'
+simulation_timestamp = '19-10-2025 16-14-15'
 
 base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/' + simulation_timestamp + '/' + generation + '/positions'
 num_simulations = 10

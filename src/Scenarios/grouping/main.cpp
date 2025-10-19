@@ -9,10 +9,13 @@
 #include "../../Robots/BinaryEPuckFactory.cpp"
 #include "../../Simulator/SwarmSimulator.cpp"
 #include "./GroupingDataWriter.cpp"
+#include "../../Automaton/AutomatonWriter.cpp"
+using individual_type = boost::dynamic_bitset<>;
+
 
 const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
 const int POPULATION_SIZE = 10;
-const int SWARM_SIZE = 30;
+const int SWARM_SIZE = 10;
 
 std::string buildOutputDirPath() {
 	auto t = std::time(nullptr);
@@ -40,7 +43,7 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
 
-	BinaryEPuckFactory *robot_factory = new BinaryEPuckFactory(automaton);
+	BinaryEPuckFactory *robot_factory = new BinaryEPuckFactory(automaton, &automaton_factory);
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE);
 
 	GroupingDataWriter *data_writer = new GroupingDataWriter(buildOutputDirPath());
@@ -48,7 +51,12 @@ int main(int argc, char *argv[]) {
 
 	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
 	std::cout << "Starting genetic algorithm..." << std::endl;
-	algorithm.run();
+	individual_type best_individual = algorithm.run();
+
+	Automaton best_automaton = *automaton_factory.buildModifiedAutomatonFromChromosome(best_individual, automaton);
+
+	AutomatonWriter automaton_writer;
+	automaton_writer.writeAutomatonToFile(best_automaton, "./output/grouping/best_automaton.xml");
 
 	std::cout << "Simulation finished." << std::endl;
 	return 0;
