@@ -24,38 +24,48 @@ public:
 		}
 
 		std::cout << "Evaluating " << clones.size() << " clones of individual " << id << std::endl;
-
+		
 		std::vector<Enki::EPuck*> robots;
-		for (const auto& clone : clones) {
-			auto robot = robot_factory->buildFromChromosome(clone);
-			robots.push_back(robot);
-		}
-
+		GroupingDataCollector* data_collector;
 		std::vector<Enki::PhysicalObject*> objects;
-
-		GroupingDataCollector* data_collector = new GroupingDataCollector(robots);
-		simulator->simulate(robots, objects, data_collector);
-
 		std::vector<double> dispersions;
+		std::vector<double> all_fitness;
 		
-		for (auto &step : data_collector->getData()) {
-			dispersions.push_back(calculateDispersion(step));
-		}
+		for (int i = 0; i < 10; ++i) {
+			for (const auto& clone : clones) {
+				auto robot = robot_factory->buildFromChromosome(clone);
+				robots.push_back(robot);
+			}
 
-		// TODO: the total steps should not be hardcoded
-		double cost = 0.0;
-		for (int i = 0; i < 1800; ++i) {
-            double t = i / 10.0;
-			cost += dispersions[i] * t;
+			data_collector = new GroupingDataCollector(robots);
+			simulator->simulate(robots, objects, data_collector);
+
+			for (auto &step : data_collector->getData()) {
+				dispersions.push_back(calculateDispersion(step));
+			}
+
+			// TODO: the total steps should not be hardcoded
+			double cost = 0.0;
+			for (int i = 0; i < 1800; ++i) {
+				double t = i / 10.0;
+				cost += dispersions[i] * t;
+			}
+
+			data_writer->writePositions(generation, id, data_collector->getData(), individual, i);
+			data_writer->writeDispersion(generation, id, dispersions, individual, i);
+
+			// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
+			double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
+			all_fitness.push_back(fitness);
+
+			delete(data_collector);
+			dispersions.clear();
+			robots.clear();
+			objects.clear();
+
 		}
 		
-		data_writer->writePositions(generation, id, data_collector->getData(), individual);
-		data_writer->writeDispersion(generation, id, dispersions, individual);
-
-		// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
-		double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
-		
-		return fitness;
+		return std::accumulate(all_fitness.begin(), all_fitness.end(), 0.0) / all_fitness.size();
 	}
 
 	std::vector<double> evaluatePopulation(const population_type& population, int generation) override {

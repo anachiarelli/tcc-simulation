@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <boost/dynamic_bitset.hpp>
+#include <unordered_map>
 #include "../../Automaton/AutomatonFactory.cpp"
 #include "../../Genetics/GeneMap/GeneMapBuilder.cpp"
 #include "../../Genetics/GeneMap/GeneMap.cpp"
@@ -10,11 +11,13 @@
 #include "../../Simulator/SwarmSimulator.cpp"
 #include "./GroupingDataWriter.cpp"
 #include "../../Automaton/AutomatonWriter.cpp"
+#include "./GroupingParamDecoder.cpp"
 using individual_type = boost::dynamic_bitset<>;
+using event_params = std::unordered_map<std::string, std::pair<double, double>>;
 
 
 const int WORLD_SIZE = 316; // World size of 316 taken from GAUCI_A
-const int POPULATION_SIZE = 10;
+const int POPULATION_SIZE = 40;
 const int SWARM_SIZE = 10;
 
 std::string buildOutputDirPath() {
@@ -43,7 +46,8 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
 
-	BinaryEPuckFactory *robot_factory = new BinaryEPuckFactory(automaton, &automaton_factory);
+	GroupingParamDecoder *param_decoder = new GroupingParamDecoder();
+	BinaryEPuckFactory *robot_factory = new BinaryEPuckFactory(automaton, &automaton_factory, param_decoder);
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE);
 
 	GroupingDataWriter *data_writer = new GroupingDataWriter(buildOutputDirPath());
@@ -57,6 +61,13 @@ int main(int argc, char *argv[]) {
 
 	AutomatonWriter automaton_writer;
 	automaton_writer.writeAutomatonToFile(best_automaton, "./output/grouping/best_automaton.xml");
+
+	event_params best_event_params = param_decoder->decodeParams(best_individual);
+
+	std::cout << "Best individual found: " << best_individual << std::endl;
+	for (const auto& [event_name, speeds] : best_event_params) {
+		std::cout << "Event " << event_name << ": v_right = " << speeds.first << ", v_left = " << speeds.second << std::endl;
+	}
 
 	std::cout << "Simulation finished." << std::endl;
 	return 0;

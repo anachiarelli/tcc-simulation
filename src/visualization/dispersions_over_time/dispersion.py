@@ -1,15 +1,16 @@
 import matplotlib.pyplot as plt
 import statistics
 from pathlib import Path
+import os
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/current')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/19-10-2025 17-39-39')
 
 for generation_dir in base_dir.iterdir():
     if not generation_dir.is_dir():
         continue
 
     fitness_by_individual = {}
-    with (generation_dir / 'fitness.txt').open() as fitness_file:
+    with (generation_dir / 'fitness.csv').open() as fitness_file:
         i = 0
         for row in fitness_file:
             individual = str(i).zfill(3)
@@ -22,17 +23,14 @@ for generation_dir in base_dir.iterdir():
             best_individual = key
 
     dispersion_over_time_per_individual = {}
-    file_names = []
-    for file in (generation_dir / "dispersions").iterdir():
-        if not file.is_file():
-            continue
-
-        individual = file.name[0:3]
+    files = [f for f in sorted(os.listdir(generation_dir / "dispersions")) if f.endswith('_0.csv')]
+    for file in files:
+        individual = file.split('_')[0]
        
         if individual not in dispersion_over_time_per_individual:
             dispersion_over_time_per_individual[individual] = []
 
-        with file.open() as individual_file:
+        with (generation_dir / "dispersions" / file).open() as individual_file:
             for row in individual_file:
                 dispersion_over_time_per_individual[individual].append(float(row))
 
@@ -49,7 +47,7 @@ for generation_dir in base_dir.iterdir():
     plt.plot(average_dispersion_over_time, linestyle='dotted', label='Média')
     plt.grid()
     plt.xlim([0, len(average_dispersion_over_time)])
-    plt.ylim([0, 32000]) # TODO 10 = 3000 100 = 32000
+    plt.ylim([0, 3000]) # TODO 10 = 3000 100 = 32000
     plt.xlabel('Tempo (s/10)')
     plt.ylabel('Dispersão')
     plt.legend()

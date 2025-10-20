@@ -13,7 +13,7 @@ class GroupingDataWriter {
 public:
     GroupingDataWriter(std::string output_dir) : output_dir(output_dir) {}
 
-    void writePositions(int generation, int individual_id, const std::vector<std::vector<std::vector<double>>>& data, individual_type individual) {
+    void writePositions(int generation, int individual_id, const std::vector<std::vector<std::vector<double>>>& data, individual_type individual, int run) {
         std::string individual_id_str = padInteger(individual_id, 3);
         std::string generation_str = padInteger(generation, 3);
         std::string output_dir = this->output_dir + "/" + generation_str + "/positions";
@@ -21,7 +21,7 @@ public:
         std::string buffer;
 		boost::to_string(individual, buffer);
 
-        std::string path = output_dir + "/" + individual_id_str + "_" + buffer + ".csv";
+        std::string path = output_dir + "/" + individual_id_str + "_" + buffer + "_" + std::to_string(run) + ".csv";
         std::ofstream file(path);
 
         if (!file.is_open()) {
@@ -39,7 +39,7 @@ public:
         file.close();
     }
 
-    void writeDispersion(int generation, int individual_id, const std::vector<double>& dispersion_data, individual_type individual) {
+    void writeDispersion(int generation, int individual_id, const std::vector<double>& dispersion_data, individual_type individual, int run) {
         std::string individual_id_str = padInteger(individual_id, 3);
         std::string generation_str = padInteger(generation, 3);
         std::string output_dir = this->output_dir + "/" + generation_str + "/dispersions";
@@ -47,7 +47,7 @@ public:
         std::string buffer;
         boost::to_string(individual, buffer);
 
-        std::string path = output_dir + "/" + individual_id_str + "_" + buffer + ".csv";
+        std::string path = output_dir + "/" + individual_id_str + "_" + buffer + "_" + std::to_string(run) + ".csv";
         std::ofstream file(path);
 
         if (!file.is_open()) {
