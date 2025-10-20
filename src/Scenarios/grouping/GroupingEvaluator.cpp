@@ -52,7 +52,7 @@ public:
 			}
 
 			data_writer->writePositions(generation, id, data_collector->getData(), individual, i);
-			data_writer->writeDispersion(generation, id, dispersions, individual, i);
+			// data_writer->writeDispersion(generation, id, dispersions, individual, i);
 
 			// Setting fitness to 1/(1 + cost), as the algorithm's goal is to maximize it
 			double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers

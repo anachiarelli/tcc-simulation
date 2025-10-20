@@ -15,8 +15,8 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 num_robots = 10
 diameter_robot = 7.4
 world_size = 316  # in cm, should match simulation setup
-generation = '020'
-simulation_timestamp = '20-10-2025 00-51-57'
+generation = '100'
+simulation_timestamp = '20-10-2025 03-45-27'
 
 base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/' + simulation_timestamp + '/' + generation + '/positions'
 num_simulations = 40
@@ -26,11 +26,11 @@ rows, cols = 4, 10
 fps = 10  # frames per second in output video
 
 # Trajectory (trail) configuration
-enable_trails = True
+enable_trails = False # set to True to enable trails
 trail_length = 40  # number of previous positions to draw (like plot_40)
 
 #update this line, there is no ending with 0.csv, there is no such files
-robot_files = [f for f in sorted(os.listdir(base_dir)) if f.endswith('_0.csv')][:num_simulations]
+robot_files = [f for f in sorted(os.listdir(base_dir)) if f.endswith('_1.csv')][:num_simulations]
 
 # Read all data
 robot_trajectories_x_all = []
