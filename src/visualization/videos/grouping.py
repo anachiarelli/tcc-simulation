@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+from matplotlib.lines import Line2D
 import numpy as np
 import os
 from matplotlib.animation import FuncAnimation, FFMpegWriter
@@ -16,7 +17,7 @@ num_robots = 10
 diameter_robot = 7.4
 world_size = 316  # in cm, should match simulation setup
 generation = '100'
-simulation_timestamp = '20-10-2025 03-45-27'
+simulation_timestamp = '20-10-2025 15-47-53'
 
 base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/' + simulation_timestamp + '/' + generation + '/positions'
 num_simulations = 40
@@ -25,9 +26,7 @@ rows, cols = 4, 10
 # Video parameters
 fps = 10  # frames per second in output video
 
-# Trajectory (trail) configuration
-enable_trails = False # set to True to enable trails
-trail_length = 40  # number of previous positions to draw (like plot_40)
+# Trajectory (trail) configuration: trails removed
 
 #update this line, there is no ending with 0.csv, there is no such files
 robot_files = [f for f in sorted(os.listdir(base_dir)) if f.endswith('_1.csv')][:num_simulations]
@@ -82,10 +81,19 @@ blue_color = (0.0, 0.45, 0.8)  # pleasant blue
 
 # Create Full HD figure (1920x1080). figsize is in inches; use 1920/100 x 1080/100 with dpi=100 for 1920x1080 pixels
 fig_dpi = 100
+# base size in inches for 1920x1080 at dpi=100
 fig_width = 1920 / fig_dpi
 fig_height = 1080 / fig_dpi
+# substantially increase figure size so each subplot is larger (approx 2x)
+fig_width *= 2.0
+fig_height *= 2.0
 fig, axes = plt.subplots(rows, cols, figsize=(fig_width, fig_height), dpi=fig_dpi)
 axes = axes.flatten()
+
+# tighten spacing so subplots occupy more area (smaller gaps)
+plt.subplots_adjust(wspace=0.25, hspace=0.35)
+# let tight_layout make better use of margins
+fig.tight_layout(pad=2.0)
 
 # Pre-create artists for each subplot to speed animation
 plot_artists = []
@@ -97,20 +105,22 @@ for sim_idx, ax in enumerate(axes):
         spine.set_visible(True)
         spine.set_linewidth(1.5)
     ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-    ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True, labelsize=8)
-    ax.set_title(str(sim_idx), fontsize=12, pad=8, loc='center')
-    artists = {'robot_circles': []}
-    if enable_trails:
-        artists['robot_trails'] = []
+    # increase tick label sizes for readability on larger plots
+    ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True, labelsize=12)
+    ax.set_title(str(sim_idx), fontsize=16, pad=12, loc='center')
+    artists = {'robot_circles': [], 'robot_arrows': []}
     if sim_idx < len(robot_files):
         for i in range(num_robots):
             circle = Circle((0, 0), diameter_robot / 2.0, facecolor=blue_color, edgecolor=blue_color, linewidth=1.0, alpha=0.95)
             ax.add_patch(circle)
             artists['robot_circles'].append(circle)
-            if enable_trails:
-                # create an initial empty Line2D for the robot's trail
-                (line,) = ax.plot([], [], linewidth=1.2, color=blue_color, alpha=0.7)
-                artists['robot_trails'].append(line)
+            # trails removed; no trail Line2D created
+            # create a long line-only shaft to indicate heading (no arrow head)
+            # length: ~5x a nominal arrow size; we'll use diameter_robot * 5
+            shaft_len = diameter_robot
+            line = Line2D([0, shaft_len], [0, 0], color='red', linewidth=1.2, alpha=1.0, solid_capstyle='butt')
+            ax.add_line(line)
+            artists['robot_arrows'].append(line)
     plot_artists.append(artists)
 
 def update(frame):
@@ -127,14 +137,31 @@ def update(frame):
                 # set uniform blue color
                 artists['robot_circles'][i].set_facecolor(blue_color)
                 artists['robot_circles'][i].set_edgecolor(blue_color)
-                # update trail if enabled
-                if enable_trails:
-                    start_idx = max(0, idx - trail_length + 1)
-                    trail_x = xs[start_idx:idx + 1]
-                    trail_y = ys[start_idx:idx + 1]
-                    artists['robot_trails'][i].set_data(trail_x, trail_y)
-                    # fade the trail by adjusting alpha on the Line2D (matplotlib doesn't support per-segment alpha easily)
-                    artists['robot_trails'][i].set_alpha(0.6)
+                # trails removed; nothing to update here
+                # update heading arrow if available
+                try:
+                    thetas = robot_trajectories_theta_all[sim_idx][i]
+                    if len(thetas) > idx:
+                        theta = thetas[idx]
+                    else:
+                        theta = thetas[-1] if thetas else 0.0
+                except Exception:
+                    theta = 0.0
+                # Arrow should start at robot perimeter and point outward
+                # robot radius
+                r = diameter_robot / 2.0
+                # shaft length: use longer line (~5x robot diameter)
+                shaft_len = diameter_robot
+                # compute offset so start point is just outside the robot
+                start_dx = (r + 0.1) * np.cos(theta)
+                start_dy = (r + 0.1) * np.sin(theta)
+                start_x = x_last + start_dx
+                start_y = y_last + start_dy
+                end_x = start_x + shaft_len * np.cos(theta)
+                end_y = start_y + shaft_len * np.sin(theta)
+                # artists['robot_arrows'][i] is a Line2D
+                line = artists['robot_arrows'][i]
+                line.set_data([start_x, end_x], [start_y, end_y])
     return []
 
 ani = FuncAnimation(fig, update, frames=video_frames, blit=False)

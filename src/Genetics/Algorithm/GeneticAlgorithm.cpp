@@ -91,7 +91,10 @@ private:
             evaluation_sum += evaluation_result[i];
         }
 
-        next_population.push_back(current_population[best_index]); // elitism
+        // Elitism -> Carry over the best individual
+        next_population.push_back(current_population[best_index]);
+
+
         for (int i = 0; i < current_population.size() - 1; ++i) {
             individual_type parent_1 = this->selectParent(current_population, evaluation_result, evaluation_sum);
             individual_type parent_2 = this->selectParent(current_population, evaluation_result, evaluation_sum);

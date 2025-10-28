@@ -40,12 +40,21 @@ plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linesty
 plt.title('Fitness por Geração')
 plt.xlabel('Geração')
 plt.ylabel('Fitness')
-# Use generation numbers (1-based) as x-tick labels
 try:
-    xtick_labels = [int(generation) + 1 for generation in generations]
+    xtick_labels_all = [int(generation) for generation in generations]
 except Exception:
-    xtick_labels = generations
-plt.xticks(index, xtick_labels)
+    xtick_labels_all = generations
+
+# Choose tick positions every 10 generations (0-based index). Always include the last generation.
+if len(generations) == 0:
+    tick_positions = []
+else:
+    tick_positions = list(range(0, len(generations), 10))
+    if (len(generations) - 1) not in tick_positions:
+        tick_positions.append(len(generations) - 1)
+
+tick_labels = [xtick_labels_all[i] for i in tick_positions]
+plt.xticks(tick_positions, tick_labels)
 plt.legend()
 plt.grid(True, axis='y')  # Grid only on y-axis for clarity
 plt.xlim([-0.5, max(len(generations) - 0.5, 0)])  # Adjust x-axis limits

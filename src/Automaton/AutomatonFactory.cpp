@@ -1,3 +1,6 @@
+#ifndef AUTOMATON_FACTORY_CPP
+#define AUTOMATON_FACTORY_CPP
+
 #include "Automaton.cpp"
 #include <string>
 #include <pugixml.hpp>
@@ -122,3 +125,5 @@ class AutomatonFactory {
             return new Automaton(events, transitions, states, states[base_automaton->getInitialState()->getId()]);
         }
 };
+
+#endif // AUTOMATON_FACTORY_CPP
