@@ -3,7 +3,7 @@ import statistics
 from pathlib import Path
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/28-10-2025 23-39-10')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/28-10-2025 21-27-16')
 
 fitnesses_by_generation = []
 

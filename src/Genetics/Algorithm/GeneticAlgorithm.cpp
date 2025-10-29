@@ -33,7 +33,7 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        int num_generations = 200;
+        int num_generations = 100;
         // Clustering: Each evolution was run for 1000 generations. (GAUCI)
         for (int i = 1; i <= num_generations; i++) {
             population = this->createNextPopulation(population, fitnesses);

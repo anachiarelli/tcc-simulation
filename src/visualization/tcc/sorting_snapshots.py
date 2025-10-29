@@ -101,7 +101,7 @@ def parse_id_from_filename(fname: str):
         return None
 
 
-def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, cols: int = 8, out_dir: Path = None):
+def make_grid_for_generation(output_base: Path, generation: str, rows: int = 2, cols: int = 5, out_dir: Path = None):
     num_simulations = rows * cols
     generation_dir = output_base / generation
     robots_dir = generation_dir / 'positions' / 'robots'
@@ -170,12 +170,12 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
             except Exception:
                 fval = None
 
-            title_text = f"individual {indiv_id}: fitness = n/a"
+            title_text = f"Fitness = n/a"
             if fval is not None and not np.isnan(fval):
                 try:
-                    title_text = f"individual {indiv_id}: fitness = {fval:.2f}"
+                    title_text = f"Fitness = {fval:.2f}"
                 except Exception:
-                    title_text = f"individual {indiv_id}: fitness = {fval}"
+                    title_text = f"Fitness = {fval}"
             ax.set_title(title_text, fontsize=9, pad=6)
 
             rx, ry, rrgb = read_robot_final_positions(robot_path)
@@ -188,30 +188,22 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
                 y = ry[i]
                 if x is None:
                     continue
-                # determine color: map recorded rgb to nearest canonical color; if missing, use index mod 3
+                # determine color: map recorded rgb to nearest canonical color; if missing, use black
                 if rrgb[i] is not None:
                     color = nearest_canonical_color(rrgb[i])
                 else:
-                    # deterministic fallback
-                    if i % 3 == 0:
-                        color = CANONICAL_COLORS['red']
-                    elif i % 3 == 1:
-                        color = CANONICAL_COLORS['blue']
-                    else:
-                        color = CANONICAL_COLORS['green']
-
-                # (previously highlighted best individuals green here) -- no special highlight now
+                    color = 'black'
 
                 circle = Circle((x, y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor=color, linewidth=0.6, alpha=0.95)
                 ax.add_patch(circle)
         else:
-            ax.set_title("individual n/a: fitness = n/a", fontsize=9, pad=6)
+            ax.set_title("individual n/a: Fitness = n/a", fontsize=9, pad=6)
 
     # save
     if out_dir is None:
         out_dir = Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f'sorting_snapshots_generation_{generation}.png'
+    out_path = out_dir / f'comportamento-classificacao-{generation}.png'
     fig.savefig(out_path, dpi=fig_dpi)
     plt.close(fig)
     print(f"Saved sorting snapshots for generation {generation} -> {out_path}")
@@ -222,9 +214,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/28-10-2025 21-27-16',
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='000,010,020,030,040,050,060,070,080,090,100', help='Comma separated generation ids')
-    parser.add_argument('--rows', type=int, default=5)
-    parser.add_argument('--cols', type=int, default=8)
+    parser.add_argument('--generations', type=str, default='000,020,050,080,100', help='Comma separated generation ids')
+    parser.add_argument('--rows', type=int, default=2)
+    parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)
     args = parser.parse_args()
 

@@ -100,7 +100,7 @@ def read_object_trajectories(pos_file: Path):
     return obj_x, obj_y
 
 
-def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, cols: int = 8, out_dir: Path = None):
+def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, cols: int = 5, out_dir: Path = None):
     num_simulations = rows * cols
     generation_dir = output_base / generation
     robots_dir = generation_dir / 'positions' / 'robots'
@@ -199,12 +199,12 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
                     fval = id_fitness_list[idx_in_list][1]
             except Exception:
                 fval = None
-            title_text = f"individual {indiv_id}: fitness = n/a"
+            title_text = f"Fitness = n/a"
             if fval is not None and not np.isnan(fval):
                 try:
-                    title_text = f"individual {indiv_id}: fitness = {fval:.2f}"
+                    title_text = f"Fitness = {fval:.2f}"
                 except Exception:
-                    title_text = f"individual {indiv_id}: fitness = {fval}"
+                    title_text = f"Fitness = {fval}"
             ax.set_title(title_text, fontsize=9, pad=6)
 
             rx, ry, rtheta = read_robot_trajectories(robot_path)
@@ -218,7 +218,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
                 xs = rx[i]
                 ys = ry[i]
                 if xs and ys:
-                    color = BEST_COLOR if is_best else ROBOT_COLOR
+                    color = ROBOT_COLOR
                     last_x, last_y = xs[-1], ys[-1]
                     circle = Circle((last_x, last_y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor=color, linewidth=0.6, alpha=0.95)
                     ax.add_patch(circle)
@@ -238,7 +238,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
     if out_dir is None:
         out_dir = Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f'clustering_snapshots_generation_{generation}.png'
+    out_path = out_dir / f'comportamento-clustering-{generation}.png'
     fig.savefig(out_path, dpi=fig_dpi)
     plt.close(fig)
     print(f"Saved clustering snapshots for generation {generation} -> {out_path}")
@@ -247,11 +247,11 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/28-10-2025 23-39-10',
+    parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/28-10-2025 20-51-24',
                         help='Base output directory containing generation subfolders')
     parser.add_argument('--generations', type=str, default='000,010,050,100,150,200', help='Comma separated generation ids')
-    parser.add_argument('--rows', type=int, default=5)
-    parser.add_argument('--cols', type=int, default=8)
+    parser.add_argument('--rows', type=int, default=8)
+    parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)
     args = parser.parse_args()
 
