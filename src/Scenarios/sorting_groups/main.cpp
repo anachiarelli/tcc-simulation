@@ -8,6 +8,8 @@
 #include "./SortingDataWriter.cpp"
 #include "../../Robots/TernaryEPuckFactory.cpp"
 #include "../../Simulator/SwarmSimulator.cpp"
+#include "../../Automaton/AutomatonWriter.cpp"
+#include "./SortingGroupsParamDecoder.cpp"
 
 const int SWARM_SIZE = 30; // In each trial, r = 30 robots
 const int NUMBER_OF_GROUPS = 3;
@@ -34,6 +36,8 @@ int main(int argc, char *argv[]) {
 	GeneMapBuilder gene_map_builder;
 	GeneMap gene_map = gene_map_builder.buildMapFromAutomaton(automaton);
 
+	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
+
 	// TODO: remove hardcoded parameters once GeneMapBuilder is updated
 	gene_map.addSection(8, "uint"); // speed v0_right -> wall
 	gene_map.addSection(8, "uint"); // speed v0_left -> wall
@@ -44,7 +48,8 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Gene map length: " << gene_map.getLength() << " bits." << std::endl;
 
-	TernaryEPuckFactory *robot_factory = new TernaryEPuckFactory(automaton);
+	SortingGroupsParamDecoder *param_decoder = new SortingGroupsParamDecoder();
+	TernaryEPuckFactory *robot_factory = new TernaryEPuckFactory(automaton, &automaton_factory, param_decoder);
 	SwarmSimulator *simulator = new SwarmSimulator(WORLD_SIZE);
 
 	SortingDataWriter *data_writer = new SortingDataWriter(buildOutputDirPath());
@@ -52,7 +57,19 @@ int main(int argc, char *argv[]) {
 
 	GeneticAlgorithm algorithm = GeneticAlgorithm(POPULATION_SIZE, gene_map, evaluator);
 	std::cout << "Starting genetic algorithm..." << std::endl;
-	algorithm.run();
+	individual_type best_individual = algorithm.run();
+
+	Automaton best_automaton = *automaton_factory.buildModifiedAutomatonFromChromosome(best_individual, automaton);
+
+	AutomatonWriter automaton_writer;
+	automaton_writer.writeAutomatonToFile(best_automaton, "./output/sorting_groups/best_automaton.xml");
+
+	event_params best_event_params = param_decoder->decodeParams(best_individual);
+
+	std::cout << "Best individual found: " << best_individual << std::endl;
+	for (const auto& [event_name, speeds] : best_event_params) {
+		std::cout << "Event " << event_name << ": v_right = " << speeds.first << ", v_left = " << speeds.second << std::endl;
+	}
 
 	std::cout << "Simulation finished." << std::endl;
 	return 0;

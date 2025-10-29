@@ -1,5 +1,7 @@
 build
+*.png
 **/output
 input
 src/visualization/videos/*.mp4
 src/visualization/videos/*.png
+best_automatons/*

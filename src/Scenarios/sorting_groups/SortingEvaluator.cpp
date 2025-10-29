@@ -22,6 +22,8 @@ public:
 		data_writer(data_writer) {}
 	
 	double evaluateFitness(const individual_type& individual, int id, int generation) override {
+		
+		std::cout << "Evaluating clones of individual " << id << std::endl;
         std::vector<population_type> groups;
         std::vector<Enki::Color> colors = {
             Enki::Color(1.0, 0.0, 0.0, 1.0), // Red
@@ -36,7 +38,6 @@ public:
 		SortingDataCollector* data_collector;
 
 		for (int i = 0; i < 10; ++i) { // 10 runs per individual
-
             for (int j = 0; j < 3; j++) {
                  for (int k = 0; k < swarm_size; k++) {
                     auto robot = robot_factory->buildFromChromosome(individual);
