@@ -6,6 +6,8 @@ from matplotlib.patches import Circle
 import argparse
 import numpy as np
 
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17')
+
 # Scenario-specific constants (from src/Scenarios/sorting_groups/main.cpp)
 NUM_ROBOTS = 30
 DIAMETER_ROBOT = 7.4
@@ -18,7 +20,6 @@ CANONICAL_COLORS = {
     'green': (0.0, 0.7, 0.2)
 }
 
-
 def read_fitness(generation_dir: Path):
     fitness_file = generation_dir / 'fitness.csv'
     if not fitness_file.is_file():
@@ -30,7 +31,7 @@ def read_fitness(generation_dir: Path):
             if not row:
                 continue
             try:
-                fitnesses.append(float(row))
+                fitnesses.append(float(row) * 100)
             except Exception:
                 fitnesses.append(float('nan'))
     return fitnesses
@@ -101,7 +102,7 @@ def parse_id_from_filename(fname: str):
         return None
 
 
-def make_grid_for_generation(output_base: Path, generation: str, rows: int = 2, cols: int = 5, out_dir: Path = None):
+def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, cols: int = 5, out_dir: Path = None):
     num_simulations = rows * cols
     generation_dir = output_base / generation
     robots_dir = generation_dir / 'positions' / 'robots'
@@ -109,7 +110,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 2, 
         print(f"Positions directory not found under: {generation_dir}")
         return None
 
-    robot_files_all = [f for f in os.listdir(robots_dir) if f.endswith('.csv')]
+    robot_files_all = [f for f in os.listdir(robots_dir) if f.endswith('0.csv')]
     robots_map = {}
     for f in robot_files_all:
         iid = parse_id_from_filename(f)
@@ -209,13 +210,12 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 2, 
     print(f"Saved sorting snapshots for generation {generation} -> {out_path}")
     return out_path
 
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/28-10-2025 21-27-16',
+    parser.add_argument('--output-base', type=str, default=base_dir,
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='000,020,050,080,100', help='Comma separated generation ids')
-    parser.add_argument('--rows', type=int, default=2)
+    parser.add_argument('--generations', type=str, default='011', help='Comma separated generation ids')
+    parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)
     args = parser.parse_args()

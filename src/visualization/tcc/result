@@ -1,0 +1,4 @@
+Event v_o: v_right = 12.1, v_left = -0.1
+Event v_w: v_right = 12.1, v_left = -5
+Event v_s: v_right = -6.1, v_left = -9.6
+Simulation finished.

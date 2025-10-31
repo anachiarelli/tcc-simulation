@@ -6,6 +6,8 @@
 #include "./SortingDataCollector.cpp"
 #include "enki/PhysicalEngine.h"
 #include <cmath>
+#include "../../Geometry/GrahamScan.cpp"
+#include "../../Geometry/Point.cpp"
 
 using individual_type = boost::dynamic_bitset<>;
 using population_type = std::vector<individual_type>;
@@ -34,7 +36,8 @@ public:
 		std::vector<Enki::EPuck*> robots;
 		objects_list objects;
 		std::vector<double> all_fitness;
-		std::vector<double> dispersions;
+		std::vector<double> dispersion_by_step;
+		std::vector<int> aliens_counts_by_step;
 		SortingDataCollector* data_collector;
 
 		for (int i = 0; i < 10; ++i) { // 10 runs per individual
@@ -60,38 +63,48 @@ public:
 			
 			// Objects dispersion over time
 			for (auto &step : data_collector->getRobotsData()) {
-                std::vector<std::vector<std::vector<double>>> groups_positions = {{}, {}, {}};
-                for (auto &robot : step) {
-                    if (robot[3] == 1.0) { // Red
-                        groups_positions[0].push_back(robot);
-                    } else if (robot[4] == 1.0) { // Green
-                        groups_positions[1].push_back(robot);
-                    } else if (robot[5] == 1.0) { // Blue
-                        groups_positions[2].push_back(robot);
+                std::vector<Points> coordinates_by_group = {{}, {}, {}};
+                for (auto &robot_data : step) {
+                    if (robot_data[3] == 1.0) { // Red
+                        coordinates_by_group[0].push_back(Point(robot_data[0], robot_data[1]));
+                    } else if (robot_data[4] == 1.0) { // Green
+                        coordinates_by_group[1].push_back(Point(robot_data[0], robot_data[1]));
+                    } else if (robot_data[5] == 1.0) { // Blue
+                        coordinates_by_group[2].push_back(Point(robot_data[0], robot_data[1]));
                     }
                 }
+
                 double dispersion = 0.0;
-                for (auto &group : groups_positions) {
+                for (auto &group : coordinates_by_group) {
                     dispersion += calculateDispersion(group);
                 }
-				dispersions.push_back(dispersion);
+				dispersion_by_step.push_back(dispersion);
+
+				int aliens_count = countAliens(coordinates_by_group);
+				aliens_counts_by_step.push_back(aliens_count);				
 			}
 
 			// TODO: the total steps should not be hardcoded ---> Across 10 systematic experiments with 5 robots and 20 objects, on average, 86.5% of the objects were in one cluster after 10 minutes
 			double cost = 0.0;
 			for (int i = 0; i < 1800; ++i) {
 				double t = i / 10.0;
-				cost += dispersions[i] * t;
+				cost += dispersion_by_step[i] * t * (1 + (aliens_counts_by_step[i] / 60.0)); 
+
 			}
 
 			data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual, i);
 			// ->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual, i);
-			data_writer->writeDispersion(generation, id, dispersions, individual, i);
+			// data_writer->writeDispersion(generation, id, dispersion_by_step, individual, i);
 			double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
+			
+			// Penalize fitness if there are any robots of another group inside the convex hull of each group
+
+			
 			all_fitness.push_back(fitness);
 
 			delete(data_collector);
-			dispersions.clear();
+			dispersion_by_step.clear();
+			aliens_counts_by_step.clear();
 
 			robots.clear();
 			objects.clear();
@@ -115,13 +128,65 @@ private:
 	TernaryEPuckFactory *robot_factory;
 	SortingDataWriter *data_writer;
 
-	std::vector<double> findCentroid(std::vector<std::vector<double>> positions) {
+	int pnpoly(Points vertices, Point point) {
+		int i, j, c = 0;
+		for (i = 0, j = vertices.size() - 1; i < vertices.size(); j = i++) {
+			if (
+				((vertices[i].getY() > point.getY()) != (vertices[j].getY() > point.getY()))
+				&& (point.getX() < (vertices[j].getX() - vertices[i].getX()) * (point.getY() - vertices[i].getY()) / (vertices[j].getY() - vertices[i].getY()) + vertices[i].getX())
+			) {
+				c = !c;
+			}
+		}
+		return c;
+	}
+
+	int countAliens(std::vector<Points> coordinates_by_group) {
+		std::vector<Points> convex_hulls;
+		for (auto &group : coordinates_by_group) {
+			convex_hulls.push_back(GrahamScan::computeConvexHull(group));
+		}
+
+		int alien_count = 0;
+		// For each group, check how many robots from other groups are inside its convex hull
+		for (int g = 0; g < coordinates_by_group.size(); g++) {
+			for (int other_g = 0; other_g < coordinates_by_group.size(); other_g++) {
+				if (g == other_g) continue;
+
+				// Check if any point from the other group is inside the convex hull of the current group
+				for (auto &point : coordinates_by_group[other_g]) {
+					if (pnpoly(convex_hulls[g], point)) {
+						alien_count++;
+					}
+				}
+			}
+		}
+
+		// // print all coordinates for each group and its convex hull
+		// for (int g = 0; g < coordinates_by_group.size(); g++) {
+		// 	std::cout << "Group " << g << " coordinates:" << std::endl;
+		// 	for (auto &point : coordinates_by_group[g]) {
+		// 		std::cout << "(" << point.getX() << ", " << point.getY() << ")" << std::endl;
+		// 	}
+		// 	std::cout << "Group " << g << " convex hull:" << std::endl;
+		// 	for (auto &point : convex_hulls[g]) {
+		// 		std::cout << "(" << point.getX() << ", " << point.getY() << ")" << std::endl;
+		// 	}
+		// }
+
+		// std::cout << "Alien count: " << alien_count << std::endl;
+
+		// throw std::runtime_error("Stopping after aliens computation");
+		return alien_count;
+	}
+
+	Point findCentroid(Points positions) {
         double sum_x = 0;
         double sum_y = 0;
 
         for (auto it = positions.begin(); it != positions.end(); ++it) {
-            sum_x += (*it)[0];
-            sum_y += (*it)[1];
+            sum_x += it->getX();
+            sum_y += it->getY();
         }
 
         return {
@@ -130,14 +195,14 @@ private:
         };
     }
 
-    double calculateQuadraticDistance(std::vector<double> a, std::vector<double> b) {
-        return (pow((b[0] - a[0]), 2) + pow((b[1] - a[1]), 2));
+    double calculateQuadraticDistance(Point a, Point b) {
+        return (pow((b.getX() - a.getX()), 2) + pow((b.getY() - a.getY()), 2));
     }
 
-    double calculateDispersion(std::vector<std::vector<double>> positions) {
+    double calculateDispersion(Points positions) {
         double normalizer = 1 / 54.76; // (1 / 4 * raio^2) raio = 3.7
 
-        std::vector<double> centroid = this->findCentroid(positions);
+        Point centroid = findCentroid(positions);
 
         double quadratic_distances_sum = 0.0;
         for (auto it = positions.begin(); it != positions.end(); ++it) {

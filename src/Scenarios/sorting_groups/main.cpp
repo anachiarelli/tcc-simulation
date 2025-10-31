@@ -16,7 +16,7 @@ const int NUMBER_OF_GROUPS = 3;
 const int GROUP_SIZE = 10;
 const int NUMBER_OF_OBJECTS = 0; // and no objects
 const int WORLD_SIZE = 450; // The objects and the robots were initialized with a uniform distribution in a virtual square of sides 450 cm
-const int POPULATION_SIZE = 10;
+const int POPULATION_SIZE = 40;
 
 std::string buildOutputDirPath() {
 	auto t = std::time(nullptr);

@@ -3,8 +3,6 @@
 
 #include <vector>
 
-typedef std::vector<Point> Points;
-
 class Point {
 public:
     Point(double x, double y) : x(x), y(y) {}
@@ -14,5 +12,7 @@ private:
     double x;
     double y;
 };
+
+typedef std::vector<Point> Points;
 
 #endif // POINT_H
