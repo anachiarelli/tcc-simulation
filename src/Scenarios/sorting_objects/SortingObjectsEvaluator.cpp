@@ -1,9 +1,9 @@
 #include "../../Genetics/Algorithm/EvaluatorInterface.cpp"
 #include <boost/dynamic_bitset.hpp>
 #include "../../Simulator/SwarmSimulator.cpp"
-#include "../../Robots/TernaryEPuckFactory.cpp"
-#include "./SortingDataWriter.cpp"
-#include "./SortingDataCollector.cpp"
+#include "../../Robots/QuinaryEPuckFactory.cpp"
+#include "./SortingObjectsDataWriter.cpp"
+#include "./SortingObjectsDataCollector.cpp"
 #include "enki/PhysicalEngine.h"
 #include <cmath>
 #include "../../Geometry/GrahamScan.cpp"
@@ -13,24 +13,28 @@ using individual_type = boost::dynamic_bitset<>;
 using population_type = std::vector<individual_type>;
 using objects_list = std::vector<Enki::PhysicalObject*>;
 
-class SortingEvaluator : public EvaluatorInterface {
+class SortingObjectsEvaluator : public EvaluatorInterface {
 public:
-	SortingEvaluator(SwarmSimulator *simulator, int swarm_size, int number_of_groups, int number_of_objects, TernaryEPuckFactory *robot_factory, SortingDataWriter *data_writer) :
+	SortingObjectsEvaluator(SwarmSimulator *simulator, int swarm_size, int number_of_objects, QuinaryEPuckFactory *robot_factory, SortingObjectsDataWriter *data_writer) :
 		simulator(simulator),
 		swarm_size(swarm_size),
-		number_of_groups(number_of_groups),
 		number_of_objects(number_of_objects),
 		robot_factory(robot_factory),
 		data_writer(data_writer) {}
 	
 	double evaluateFitness(const individual_type& individual, int id, int generation) override {
-		
 		std::cout << "Evaluating clones of individual " << id << std::endl;
-        std::vector<population_type> groups;
-        std::vector<Enki::Color> colors = {
+		std::vector<population_type> groups;
+        std::vector<Enki::Color> robot_colors = {
             Enki::Color(1.0, 0.0, 0.0, 1.0), // Red
             Enki::Color(0.0, 1.0, 0.0, 1.0), // Green
             Enki::Color(0.0, 0.0, 1.0, 1.0)  // Blue
+        };
+
+		std::vector<Enki::Color> object_colors = {
+            Enki::Color(1.0, 0.8, 0.8, 1.0), // Light red
+            Enki::Color(0.8, 1.0, 0.8, 1.0), // Light green
+            Enki::Color(0.8, 0.8, 1.0, 1.0)  // Light blue
         };
 
 		std::vector<Enki::EPuck*> robots;
@@ -38,39 +42,47 @@ public:
 		std::vector<double> all_fitness;
 		std::vector<double> dispersion_by_step;
 		std::vector<int> aliens_counts_by_step;
-		SortingDataCollector* data_collector;
+		SortingObjectsDataCollector* data_collector;
 
 		for (int i = 0; i < 10; ++i) { // 10 runs per individual
+			// instantiating robots
             for (int j = 0; j < 3; j++) {
                  for (int k = 0; k < swarm_size; k++) {
-                    auto robot = robot_factory->buildFromChromosome(individual);
-                    robot->setColor(colors[j]);
+                    auto robot = robot_factory->buildFromChromosome(individual, object_colors[j], {object_colors[(j + 1) % 3], object_colors[(j + 2) % 3]});
+                    robot->setColor(robot_colors[j]);
+					//std::cout << "Robot " << k << " of group " << j << " color: (" << robot_colors[j] << ")" << std::endl;
                     robots.push_back(robot);
                 }
             }
 
-            // not used
-			// for (int j = 0; j < this->number_of_objects; ++j) {
-			// 	auto object = new Enki::PhysicalObject();
-			// 	object->setCylindric(5.0, 10.0, 35.0); // These cylinders have a diameter and a height of 10 cm. Their mass is approximately 35 g
-			// 	object->dryFrictionCoefficient = 0.58; // and their coefficient of static friction with the floor of our arena is approximately 0.58.
-			// 	object->setColor(Enki::Color(1.0, 1.0, 1.0, 1.0));
-			// 	objects.push_back(object);
-			// }
+			// instantiating objects
+			for (int j = 0; j < 3; j++) {
+                 for (int k = 0; k < number_of_objects; k++) {
+                    auto object = new Enki::PhysicalObject();
+                    object->setCylindric(5.0, 10.0, 35.0); // These cylinders have a diameter and a height of 10 cm. Their mass is approximately 35 g
+                    object->dryFrictionCoefficient = 0.58; // and their coefficient of static friction with the floor of our arena is approximately 0.58.
+                    object->setColor(object_colors[j]);
+					// std::cout << "Adding Object " << k << " of group " << j << " color: (" << object_colors[j] << ")" << std::endl;
+					// std::cout << "Object color: (" << object->getColor().r() << ", " << object->getColor().g() << ", " << object->getColor().b() << ")" << std::endl;
+                    objects.push_back(object);
+                }
+            }
 			
-			data_collector = new SortingDataCollector(robots, objects);
+			data_collector = new SortingObjectsDataCollector(robots, objects);
 			simulator->simulate(robots, objects, data_collector);
 			
 			// Objects dispersion over time
-			for (auto &step : data_collector->getRobotsData()) {
+
+			for (auto &step : data_collector->getObjectsData()) {
                 std::vector<Points> coordinates_by_group = {{}, {}, {}};
-                for (auto &robot_data : step) {
-                    if (robot_data[3] == 1.0) { // Red
-                        coordinates_by_group[0].push_back(Point(robot_data[0], robot_data[1]));
-                    } else if (robot_data[4] == 1.0) { // Green
-                        coordinates_by_group[1].push_back(Point(robot_data[0], robot_data[1]));
-                    } else if (robot_data[5] == 1.0) { // Blue
-                        coordinates_by_group[2].push_back(Point(robot_data[0], robot_data[1]));
+                for (auto object_data : step) {
+					//std::cout << "Object data color: (" << object_data[2] << ", " << object_data[3] << ", " << object_data[4] << ")" << std::endl;
+                    if (object_data[2] == 1.0) { // Light Red
+                        coordinates_by_group[0].push_back(Point(object_data[0], object_data[1]));
+                    } else if (object_data[3] == 1.0) { // Light Green
+                        coordinates_by_group[1].push_back(Point(object_data[0], object_data[1]));
+                    } else if (object_data[4] == 1.0) { // Light Blue
+                        coordinates_by_group[2].push_back(Point(object_data[0], object_data[1]));
                     }
                 }
 
@@ -93,7 +105,7 @@ public:
 			}
 
 			data_writer->writeRobotsPositions(generation, id, data_collector->getRobotsData(), individual, i);
-			// ->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual, i);
+			data_writer->writeObjectsPositions(generation, id, data_collector->getObjectsData(), individual, i);
 			// data_writer->writeDispersion(generation, id, dispersion_by_step, individual, i);
 			double fitness = (1.0 / (1.0 + cost)) * 100000000; // Scaling to avoid very small numbers
 			
@@ -111,7 +123,7 @@ public:
 		}
 
 		return std::accumulate(all_fitness.begin(), all_fitness.end(), 0.0) / all_fitness.size();		
-	}
+		}
 
 	std::vector<double> evaluatePopulation(const population_type& population, int generation) override {
 		std::vector<double> fitness_values = EvaluatorInterface::evaluatePopulation(population, generation);
@@ -123,10 +135,9 @@ public:
 private:
 	SwarmSimulator *simulator;
 	int swarm_size;
-    int number_of_groups;
     int number_of_objects;
-	TernaryEPuckFactory *robot_factory;
-	SortingDataWriter *data_writer;
+	QuinaryEPuckFactory *robot_factory;
+	SortingObjectsDataWriter *data_writer;
 
 	int pnpoly(Points vertices, Point point) {
 		int i, j, c = 0;

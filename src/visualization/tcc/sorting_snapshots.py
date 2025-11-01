@@ -6,7 +6,8 @@ from matplotlib.patches import Circle
 import argparse
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17')
+#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 05-49-53')
 
 # Scenario-specific constants (from src/Scenarios/sorting_groups/main.cpp)
 NUM_ROBOTS = 30
@@ -214,7 +215,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-base', type=str, default=base_dir,
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='011', help='Comma separated generation ids')
+    parser.add_argument('--generations', type=str, default='000,010,020,030,040,050,060,070,080,090,100', help='Comma separated generation ids')
     parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)
