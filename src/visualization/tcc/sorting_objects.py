@@ -8,7 +8,8 @@ import argparse
 import numpy as np
 
 # Default base dir can be overridden with --output-base
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_objects/01-11-2025 20-52-43')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_objects/04-11-2025 03-11-07')
+
 
 # Scenario constants (from src/Scenarios/sorting_objects/main.cpp)
 SWARM_SIZE = 2
@@ -18,7 +19,7 @@ NUM_OBJECTS_PER_COLOR = 5
 TOTAL_OBJECTS = NUM_OBJECTS_PER_COLOR * NUMBER_OF_GROUPS  # 15
 DIAMETER_ROBOT = 7.4
 DIAMETER_OBJECT = 10.0
-WORLD_SIZE = 450
+WORLD_SIZE = 194.0
 
 # Canonical colors (use same mapping used by other visualizers)
 CANONICAL_COLORS = {
@@ -294,8 +295,8 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--output-base', type=str, default=base_dir,
 						help='Base output directory containing generation subfolders')
-	parser.add_argument('--generations', type=str, default='030', help='Comma separated generation ids')
-	parser.add_argument('--rows', type=int, default=4)
+	parser.add_argument('--generations', type=str, default='704', help='Comma separated generation ids')
+	parser.add_argument('--rows', type=int, default=8)
 	parser.add_argument('--cols', type=int, default=5)
 	parser.add_argument('--out-dir', type=str, default=None)
 	args = parser.parse_args()

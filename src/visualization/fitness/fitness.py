@@ -3,8 +3,9 @@ import statistics
 from pathlib import Path
 import numpy as np
 
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_objects/01-11-2025 20-52-43')
-
+#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/20-10-2025 15-47-53') # article aggregation
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/05-11-2025 19-29-50/') # article object clustering
+#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17/') # article multitask aggregation
 
 fitnesses_by_generation = []
 
@@ -34,12 +35,17 @@ plt.figure(figsize=(10, 6))  # Adjust figure size for better visibility
 index = np.arange(len(generations))  # X-axis indices for generations
 
 # Plot lines for maximum and average fitness
-plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Melhor fitness')
-plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Média')
+# plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Melhor fitness')
+# plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Média')
+plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Best Individual')
+plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Average Fitness')
 
 # Customize the plot
-plt.title('Fitness por Geração')
-plt.xlabel('Geração')
+# plt.title('Fitness por Geração')
+# plt.xlabel('Geração')
+# plt.ylabel('Fitness')
+plt.title('Fitness by Generation')
+plt.xlabel('Generation')
 plt.ylabel('Fitness')
 try:
     xtick_labels_all = [int(generation) for generation in generations]

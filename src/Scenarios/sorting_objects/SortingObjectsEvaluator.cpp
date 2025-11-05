@@ -44,7 +44,7 @@ public:
 		std::vector<int> aliens_counts_by_step;
 		SortingObjectsDataCollector* data_collector;
 
-		for (int i = 0; i < 10; ++i) { // 10 runs per individual
+		for (int i = 0; i < 5; ++i) { // 5 runs per individual
 			// instantiating robots
             for (int j = 0; j < 3; j++) {
                  for (int k = 0; k < swarm_size; k++) {
@@ -100,7 +100,7 @@ public:
 			double cost = 0.0;
 			for (int i = 0; i < 1800; ++i) {
 				double t = i / 10.0;
-				cost += dispersion_by_step[i] * t * (1 + (aliens_counts_by_step[i] / 40.0)); 
+				cost += dispersion_by_step[i] * t * (1 + (aliens_counts_by_step[i] / 30.0)); 
 
 			}
 
@@ -121,9 +121,10 @@ public:
 			robots.clear();
 			objects.clear();
 		}
+		std::sort(all_fitness.begin(), all_fitness.end(), std::greater<double>());
 
-		return std::accumulate(all_fitness.begin(), all_fitness.end(), 0.0) / all_fitness.size();		
-		}
+		return std::accumulate(all_fitness.begin() + 1, all_fitness.end() - 1, 0.0) / (all_fitness.size() - 2);		
+	}
 
 	std::vector<double> evaluatePopulation(const population_type& population, int generation) override {
 		std::vector<double> fitness_values = EvaluatorInterface::evaluatePopulation(population, generation);

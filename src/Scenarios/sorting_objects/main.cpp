@@ -15,7 +15,7 @@
 const int SWARM_SIZE = 2;
 const int NUMBER_OF_GROUPS = 3;
 const int NUMBER_OF_OBJECTS = 5;
-const int WORLD_SIZE = 450;
+const int WORLD_SIZE = 194;
 const int POPULATION_SIZE = 40;
 
 std::string buildOutputDirPath() {
@@ -69,6 +69,18 @@ int main(int argc, char *argv[]) {
 	automaton_writer.writeAutomatonToFile(best_automaton, "./output/sorting_objects/best_automaton.xml");
 
 	event_params best_event_params = param_decoder->decodeParams(best_individual);
+
+	// Save best individual and its parameters into file
+	std::ofstream output_file("./output/sorting_objects/best_individual.txt");
+	if (output_file.is_open()) {
+		output_file << "Best individual: " << best_individual << std::endl;
+		for (const auto& [event_name, speeds] : best_event_params) {
+			output_file << "Event " << event_name << ": v_right = " << speeds.first << ", v_left = " << speeds.second << std::endl;
+		}
+		output_file.close();
+	} else {
+		std::cerr << "Unable to open output file." << std::endl;
+	}
 
 	std::cout << "Best individual found: " << best_individual << std::endl;
 	for (const auto& [event_name, speeds] : best_event_params) {
