@@ -198,16 +198,14 @@ def plot_best_snapshots_grid(
 			current = traj[-1]
 			xs_cur = current[:, 0]
 			ys_cur = current[:, 1]
-			ax.scatter(xs_cur, ys_cur, s=20, c="tab:blue", edgecolors=None)
+			ax.scatter(xs_cur, ys_cur, s=20, c="tab:blue", edgecolors='k', linewidths=0.5, zorder=5)
 
-			ax.set_title(f"t={t}")
+			ax.set_title(f"t={int(t/10)}s", fontsize=14)
 			ax.set_xlim(*arena_xlim)
 			ax.set_ylim(*arena_ylim)
-			ax.set_xticks([])
-			ax.set_yticks([])
-
-		# annotate row with generation label
-		axes[r, 0].text(-0.12, 0.5, f"gen {gen}", transform=axes[r, 0].transAxes, rotation=90, va="center")
+			# ✅ Add axis labels and ticks for dimensions
+			ax.set_xticks(np.linspace(0, 316, 3))
+			ax.set_yticks(np.linspace(0, 316, 3))
 
 	plt.tight_layout()
 	out_path = os.path.join(base_dir, out_name)
@@ -223,7 +221,7 @@ if __name__ == "__main__":
 	parser.add_argument("--dir", dest="base_dir", required=False,
 						default=os.path.join(os.getcwd(), "output/grouping/20-10-2025 15-47-53"),
 						help="Path to grouping output folder (contains generation subfolders)")
-	default_out = os.path.join(os.path.dirname(__file__), "best_snapshots_grid.png")
+	default_out = os.path.join(os.path.dirname(__file__), "aggregation-snapshots.png")
 	parser.add_argument("--out", dest="out_name", default=default_out,
 						help="Output image file path (absolute or relative). If relative, saved inside --dir; default is the artigo folder")
 	args = parser.parse_args()

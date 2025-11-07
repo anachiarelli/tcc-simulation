@@ -140,11 +140,11 @@ def _load_trajectory_up_to(pos_file: str, t: int) -> Tuple[np.ndarray, np.ndarra
 def _color_label_from_onehot(onehot: np.ndarray) -> str:
     # expect onehot of length 3
     if onehot[0] == 1:
-        return "red"
+        return "tab:red"
     if onehot[1] == 1:
-        return "green"
+        return "tab:green"
     if onehot[2] == 1:
-        return "blue"
+        return "tab:blue"
     return "gray"
 
 
@@ -237,14 +237,12 @@ def plot_snapshots_grid(
             # scatter points should appear above the trajectory lines
             ax.scatter(xs_cur, ys_cur, s=30, c=colors_plot, edgecolors='k', linewidths=0.3, zorder=2)
 
-            ax.set_title(f"t={t}")
+            ax.set_title(f"t={int(t/10)}s")
             ax.set_xlim(*arena_xlim)
             ax.set_ylim(*arena_ylim)
-            ax.set_xticks([])
-            ax.set_yticks([])
-
-        # annotate row with generation label (left of first column)
-        axes[r, 0].text(-0.12, 0.5, f"gen {gen_name}", transform=axes[r, 0].transAxes, rotation=90, va="center")
+            # ✅ Add axis labels and ticks for dimensions
+            ax.set_xticks(np.linspace(0, 450, 3))
+            ax.set_yticks(np.linspace(0, 450, 3))
 
     plt.tight_layout()
     out_path = os.path.join(base_dir, out_name)
@@ -264,7 +262,7 @@ if __name__ == "__main__":
         default=os.path.join(os.getcwd(), "output", "sorting_groups", "31-10-2025 02-14-17"),
         help="Path to sorting_groups output folder (contains generation subfolders)",
     )
-    default_out = os.path.join(os.path.dirname(__file__), "sorting_groups_grid.png")
+    default_out = os.path.join(os.path.dirname(__file__), "multitask-aggregation-snapshots.png")
     parser.add_argument("--out", dest="out_name", default=default_out, help="Output image file path")
     parser.add_argument("--timestamps", dest="timestamps", nargs="*", type=int,
                         default=[0, 100, 200, 400, 1000, 1800],

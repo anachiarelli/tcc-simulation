@@ -1,5 +1,6 @@
 build
 *.png
+*.mp4
 **/output
 input
 src/visualization/videos/*.mp4

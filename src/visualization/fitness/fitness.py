@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 
 #base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/20-10-2025 15-47-53') # article aggregation
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/05-11-2025 19-29-50/') # article object clustering
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33/') # article object clustering
 #base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17/') # article multitask aggregation
 
 fitnesses_by_generation = []
