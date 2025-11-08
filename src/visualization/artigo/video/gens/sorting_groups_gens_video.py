@@ -44,7 +44,7 @@ def find_positions_file_for_index(gen_dir: str, index: int, kind: str = 'robots'
     if not os.path.isdir(dirp):
         return None
     prefix = f"{index:03d}_"
-    matches = glob.glob(os.path.join(dirp, prefix + "*" + "_run2.csv"))
+    matches = glob.glob(os.path.join(dirp, prefix + "*" + "_run0.csv"))
     if not matches:
         matches = glob.glob(os.path.join(dirp, prefix + "*.csv"))
     return matches[0] if matches else None
@@ -147,10 +147,9 @@ def build_grid_video(
             continue
         best_idx = int(np.argmax(fitness))
         robots_file = find_positions_file_for_index(gen_dir, best_idx, kind='robots')
-        objects_file = find_positions_file_for_index(gen_dir, best_idx, kind='objects')
         robot_lines, robot_colors = load_all_robot_lines(robots_file)
-        object_lines = load_all_object_lines(objects_file) if objects_file else []
-        per_gen.append({'lines': robot_lines, 'colors': robot_colors, 'objects': object_lines, 'ok': True})
+        # objects removed for this plot
+        per_gen.append({'lines': robot_lines, 'colors': robot_colors, 'ok': True})
 
     total_frames = fps * duration_seconds
 
@@ -188,7 +187,7 @@ def build_grid_video(
         ax = arena_axes[idx // 5][idx % 5]
         if not entry['ok'] or not entry['lines']:
             ax.text(0.5, 0.5, 'no data', ha='center', va='center')
-            artists_per_subplot.append({'lines': [], 'scatter': None, 'objects': []})
+            artists_per_subplot.append({'lines': [], 'scatter': None})
             continue
         # title with generation number
         ax.set_title(f"Generation {gens[idx]}", fontsize=10, pad=4)
@@ -202,20 +201,32 @@ def build_grid_video(
         else:
             plot_colors = [_onehot_to_color(entry_colors[i]) if i < entry_colors.shape[0] else 'gray' for i in range(min_n)]
         # create lines with per-robot colors
-        line_artists = [ax.plot([], [], color=plot_colors[i], alpha=0.35, linewidth=0.9, zorder=2)[0] for i in range(min_n)]
+        # give trajectories a very low zorder so they are drawn beneath robot markers
+        line_artists = [ax.plot([], [], color=plot_colors[i], alpha=0.35, linewidth=0.9, zorder=0)[0] for i in range(min_n)]
         # initial scatter
         first = lines[0][:min_n, :]
-        scatter = ax.scatter(first[:, 0], first[:, 1], s=(robot_diam_cm / 2.0) ** 2, c=plot_colors, edgecolors='k', zorder=5)
-        # objects
-        obj_patches = []
-        if entry['objects']:
-            objs0 = entry['objects'][0]
-            for (x, y) in objs0:
-                p = patches.Circle((x, y), radius=object_diam_cm / 2.0, facecolor='tab:red', edgecolor='k', linewidth=0.3, zorder=4)
-                ax.add_patch(p)
-                obj_patches.append(p)
+        # draw robots with a very thin black edge to make them stand out
+        scatter = ax.scatter(
+            first[:, 0],
+            first[:, 1],
+            s=(robot_diam_cm / 2.0) ** 2,
+            c=plot_colors,
+            edgecolors='k',
+            linewidths=0.4,
+            zorder=20,
+        )
+        # objects intentionally removed from this visualization
 
-    artists_per_subplot.append({'stacked': stacked, 'min_n': min_n, 'lines': line_artists, 'scatter': scatter, 'objects': obj_patches, 'entry': entry, 'colors': entry.get('colors')})
+        # Append the artists/info for this subplot here (inside the per-gen loop).
+        # Previously this append was dedented and executed only once after the loop,
+        # which meant only the last generation's artists were animated.
+        artists_per_subplot.append({
+            'stacked': stacked,
+            'min_n': min_n,
+            'lines': line_artists,
+            'scatter': scatter,
+            'colors': entry.get('colors')
+        })
 
     time_text = bottom_ax.text(0.5, 1, 't = 0 seconds', ha='center', va='center', fontsize=16)
 
@@ -241,17 +252,13 @@ def build_grid_video(
             if info.get('colors') is not None:
                 colors_arr = info['colors']
                 colors_plot = [_onehot_to_color(colors_arr[j]) if j < colors_arr.shape[0] else 'gray' for j in range(last.shape[0])]
-                info['scatter'].set_color(colors_plot)
-            # update objects if present
-            objs = info['entry']['objects']
-            if objs and info['objects']:
-                if tstep < len(objs):
-                    curr_objs = objs[tstep]
-                else:
-                    curr_objs = objs[-1]
-                for k, p in enumerate(info['objects']):
-                    if k < curr_objs.shape[0]:
-                        p.center = (curr_objs[k, 0], curr_objs[k, 1])
+                # set_facecolor so we don't overwrite the black edgecolors set at creation
+                info['scatter'].set_facecolor(colors_plot)
+                # ensure edgecolors stay black (set_color can clobber them)
+                info['scatter'].set_edgecolors('k')
+                # keep the border thin
+                info['scatter'].set_linewidths(0.4)
+            # objects removed from this visualization; nothing to update here
 
         seconds = frame_idx // fps
         time_text.set_text(f"t = {seconds} seconds")

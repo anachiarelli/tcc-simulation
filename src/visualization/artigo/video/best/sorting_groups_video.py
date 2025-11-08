@@ -175,7 +175,8 @@ def build_video(
         ln, = arena_ax.plot([], [], color=col, alpha=0.25, linewidth=0.9, linestyle='--', zorder=1)
         line_artists.append(ln)
 
-    scatter = arena_ax.scatter(xs, ys, s=40, c=plot_colors, edgecolors='k', zorder=5)
+    # draw robots with a thin black outline so they stand out
+    scatter = arena_ax.scatter(xs, ys, s=40, c=plot_colors, edgecolors='k', linewidths=0.4, zorder=5)
 
     time_text = fig_bottom.text(0.5, 1, 't = 0 seconds', ha='center', va='center', fontsize=16)
 
@@ -195,7 +196,10 @@ def build_video(
             scatter.set_offsets(np.c_[xs, ys])
             if colors_onehot is not None:
                 colors_plot = [_onehot_to_color(colors_onehot[j]) if j < colors_onehot.shape[0] else 'gray' for j in range(xs.size)]
-                scatter.set_color(colors_plot)
+                # update facecolors but preserve/restore thin black edges
+                scatter.set_facecolor(colors_plot)
+                scatter.set_edgecolors('k')
+                scatter.set_linewidths(0.4)
         else:
             scatter.set_offsets(np.empty((0, 2)))
 
