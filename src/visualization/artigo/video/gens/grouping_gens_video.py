@@ -148,17 +148,20 @@ def build_grid_video(
         line_artists = [ax.plot([], [], color='tab:blue', alpha=0.35, linewidth=0.9, zorder=2)[0] for _ in range(min_n)]
         # initial scatter
         first = lines[0][:min_n, :]
-        # make the black border thinner for better visual subtlety
-        scatter = ax.scatter(
-            first[:, 0],
-            first[:, 1],
-            s=(robot_diam_cm / 2.0) ** 2,
-            c='tab:blue',
-            edgecolors='k',
-            linewidths=0.4,
-            zorder=5,
-        )
+        scatter = ax.scatter(first[:, 0], first[:, 1], s=(robot_diam_cm / 2.0) ** 2, c='tab:blue', edgecolors='k', zorder=5)
         artists_per_subplot.append({'stacked': stacked, 'min_n': min_n, 'lines': line_artists, 'scatter': scatter})
+
+        # # make the black border thinner for better visual subtlety
+        # scatter = ax.scatter(
+        #     first[:, 0],
+        #     first[:, 1],
+        #     s=(robot_diam_cm / 2.0) ** 2,
+        #     c='tab:blue',
+        #     edgecolors='k',
+        #     linewidths=0.4,
+        #     zorder=5,
+        # )
+        # artists_per_subplot.append({'stacked': stacked, 'min_n': min_n, 'lines': line_artists, 'scatter': scatter})
 
     time_text = bottom_ax.text(0.5, 1, 't = 0 seconds', ha='center', va='center', fontsize=16)
 
