@@ -1,6 +1,4 @@
 build
-*.png
-**/output
+output
 input
-src/visualization/videos/*.png
-best_automatons/*
+*.tgz

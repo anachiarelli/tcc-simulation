@@ -188,7 +188,7 @@ def main():
 	parser = argparse.ArgumentParser(description='Generate 5x8 grids of final robot positions for specified generations')
 	parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/20-10-2025 15-47-53',
 						help='Base output directory (contains generation subfolders)')
-	parser.add_argument('--generations', type=str, default='000',
+	parser.add_argument('--generations', type=str, default='000,002,005,010,020,030,040,060,080,100',
 						help='Comma separated list of generation names to plot (e.g. 000,050,100)')
 	parser.add_argument('--rows', type=int, default=8, help='Grid rows (default 8)')
 	parser.add_argument('--cols', type=int, default=5, help='Grid columns (default 5)')

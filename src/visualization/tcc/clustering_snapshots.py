@@ -109,8 +109,8 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
         return None
 
     # collect all csv files and map them by individual id parsed from filename prefix
-    robot_files_all = [f for f in os.listdir(robots_dir) if f.endswith('.csv')]
-    object_files_all = [f for f in os.listdir(objects_dir) if f.endswith('.csv')]
+    robot_files_all = [f for f in os.listdir(robots_dir) if f.endswith('run2.csv')]
+    object_files_all = [f for f in os.listdir(objects_dir) if f.endswith('run2.csv')]
 
     def parse_id_from_filename(fname: str):
         # expected filename format: 'NNN_<rest>.csv' where NNN is zero-padded individual id
@@ -248,7 +248,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33',
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='000', help='Comma separated generation ids')
+    parser.add_argument('--generations', type=str, default='000,002,005,010,020,030,040,060,080,100', help='Comma separated generation ids')
     parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)

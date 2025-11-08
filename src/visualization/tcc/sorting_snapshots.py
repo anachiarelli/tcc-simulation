@@ -11,7 +11,7 @@ base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting
 
 # Scenario-specific constants (from src/Scenarios/sorting_groups/main.cpp)
 NUM_ROBOTS = 30
-DIAMETER_ROBOT = 7.4
+DIAMETER_ROBOT = 10.0
 WORLD_SIZE = 450
 
 # Canonical colors requested: red, blue, green
@@ -215,7 +215,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-base', type=str, default=base_dir,
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='100', help='Comma separated generation ids')
+    parser.add_argument('--generations', type=str, default='000,002,005,010,020,030,040,060,080,100', help='Comma separated generation ids')
     parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)
