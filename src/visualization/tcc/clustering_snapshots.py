@@ -14,10 +14,9 @@ DIAMETER_OBJECT = 10.0
 WORLD_SIZE = 112
 
 # Colors
-ROBOT_COLOR = (0.0, 0.45, 0.8)  # blue
-OBJECT_COLOR = (1.0, 0.0, 0.0)  # red
-BEST_COLOR = (0.0, 0.7, 0.2)    # green for best individual's robots
-
+ROBOT_COLOR = 'tab:blue'  # blue
+OBJECT_COLOR = 'tab:red'  # red
+BEST_COLOR = 'tab:blue' 
 
 def read_fitness(generation_dir: Path):
     fitness_file = generation_dir / 'fitness.csv'
@@ -181,8 +180,8 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
         ax.set_xlim(0, WORLD_SIZE)
         ax.set_ylim(0, WORLD_SIZE)
         ax.set_aspect('equal')
-        ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-        ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
+        ax.grid(False)
+        ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
 
 
         if sim_idx < len(ordered_ids):
@@ -199,13 +198,13 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
                     fval = id_fitness_list[idx_in_list][1]
             except Exception:
                 fval = None
-            title_text = f"Fitness = n/a"
+            title_text = f"f = n/a"
             if fval is not None and not np.isnan(fval):
                 try:
-                    title_text = f"Fitness = {fval:.2f}"
+                    title_text = f"f = {fval:.2f}"
                 except Exception:
-                    title_text = f"Fitness = {fval}"
-            ax.set_title(title_text, fontsize=9, pad=6)
+                    title_text = f"f = {fval}"
+            ax.set_title(title_text, fontsize=12, pad=6)
 
             rx, ry, rtheta = read_robot_trajectories(robot_path)
             ox, oy = read_object_trajectories(object_path)
@@ -220,7 +219,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
                 if xs and ys:
                     color = ROBOT_COLOR
                     last_x, last_y = xs[-1], ys[-1]
-                    circle = Circle((last_x, last_y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor=color, linewidth=0.6, alpha=0.95)
+                    circle = Circle((last_x, last_y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor='k', linewidth=0.6, alpha=0.95)
                     ax.add_patch(circle)
 
             # plot objects: only final positions (no trajectories), colored red
@@ -229,7 +228,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
                 ys = oy[i]
                 if xs and ys:
                     last_x, last_y = xs[-1], ys[-1]
-                    circle = Circle((last_x, last_y), DIAMETER_OBJECT / 2.0, facecolor=OBJECT_COLOR, edgecolor=(0.6, 0.0, 0.0), linewidth=0.8, alpha=0.9)
+                    circle = Circle((last_x, last_y), DIAMETER_OBJECT / 2.0, facecolor=OBJECT_COLOR, edgecolor='k', linewidth=0.8, alpha=0.9)
                     ax.add_patch(circle)
         else:
             ax.set_title("individual n/a: fitness = n/a", fontsize=9, pad=6)
@@ -247,9 +246,9 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/28-10-2025 20-51-24',
+    parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33',
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='000,010,050,100,150,200', help='Comma separated generation ids')
+    parser.add_argument('--generations', type=str, default='000', help='Comma separated generation ids')
     parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)

@@ -6,8 +6,8 @@ from matplotlib.patches import Circle
 import argparse
 import numpy as np
 
-#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17')
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 05-49-53')
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17')
+# base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 05-49-53')
 
 # Scenario-specific constants (from src/Scenarios/sorting_groups/main.cpp)
 NUM_ROBOTS = 30
@@ -157,8 +157,8 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
         ax.set_xlim(0, WORLD_SIZE)
         ax.set_ylim(0, WORLD_SIZE)
         ax.set_aspect('equal')
-        ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-        ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
+        ax.grid(False)
+        ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
 
         if sim_idx < len(ordered_ids):
             indiv_id = ordered_ids[sim_idx]
@@ -172,13 +172,13 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
             except Exception:
                 fval = None
 
-            title_text = f"Fitness = n/a"
+            title_text = f"f = n/a"
             if fval is not None and not np.isnan(fval):
                 try:
-                    title_text = f"Fitness = {fval:.2f}"
+                    title_text = f"f = {fval:.2f}"
                 except Exception:
-                    title_text = f"Fitness = {fval}"
-            ax.set_title(title_text, fontsize=9, pad=6)
+                    title_text = f"f = {fval}"
+            ax.set_title(title_text, fontsize=12, pad=6)
 
             rx, ry, rrgb = read_robot_final_positions(robot_path)
 
@@ -196,7 +196,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
                 else:
                     color = 'black'
 
-                circle = Circle((x, y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor=color, linewidth=0.6, alpha=0.95)
+                circle = Circle((x, y), DIAMETER_ROBOT / 2.0, facecolor=color, edgecolor='k', linewidth=0.2, alpha=0.95)
                 ax.add_patch(circle)
         else:
             ax.set_title("individual n/a: Fitness = n/a", fontsize=9, pad=6)
@@ -205,7 +205,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 8, 
     if out_dir is None:
         out_dir = Path.cwd()
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f'comportamento-classificacao-{generation}.png'
+    out_path = out_dir / f'comportamento-multitask-{generation}.png'
     fig.savefig(out_path, dpi=fig_dpi)
     plt.close(fig)
     print(f"Saved sorting snapshots for generation {generation} -> {out_path}")
@@ -215,7 +215,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output-base', type=str, default=base_dir,
                         help='Base output directory containing generation subfolders')
-    parser.add_argument('--generations', type=str, default='000,010,020,030,040,050,060,070,080,090,100', help='Comma separated generation ids')
+    parser.add_argument('--generations', type=str, default='100', help='Comma separated generation ids')
     parser.add_argument('--rows', type=int, default=8)
     parser.add_argument('--cols', type=int, default=5)
     parser.add_argument('--out-dir', type=str, default=None)

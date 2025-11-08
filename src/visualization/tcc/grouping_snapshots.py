@@ -11,8 +11,7 @@ import numpy as np
 NUM_ROBOTS = 10
 DIAMETER_ROBOT = 7.4
 WORLD_SIZE = 316  # cm
-BLUE_COLOR = (0.0, 0.45, 0.8)
-GREEN_COLOR = (0.0, 0.7, 0.2)
+BLUE_COLOR = 'tab:blue'
 
 
 def read_fitness(generation_dir: Path):
@@ -132,9 +131,9 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 	axes = axes.flatten()
 
 	# reduce whitespace between subplots so boxes are closer together
-	plt.subplots_adjust(wspace=0.06, hspace=0.06)
+	plt.subplots_adjust(wspace=0.08, hspace=0.08)
 	# reduce outer padding
-	fig.tight_layout(pad=0.6)
+	fig.tight_layout(h_pad=0.2, w_pad=0.8)
 
 	for sim_idx in range(num_simulations):
 		ax = axes[sim_idx]
@@ -142,8 +141,8 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 		ax.set_xlim(0, WORLD_SIZE)
 		ax.set_ylim(0, WORLD_SIZE)
 		ax.set_aspect('equal')
-		ax.grid(True, which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-		ax.tick_params(left=True, bottom=True, labelleft=False, labelbottom=False)
+		ax.grid(False)
+		ax.tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
 
 		# map this subplot to the file index according to the fitness-sorted order
 		if sim_idx < len(order):
@@ -154,10 +153,10 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 			title_text = f"Fitness = n/a"
 			if not np.isnan(fval):
 				try:
-					title_text = f"Fitness = {fval:.2f}"
+					title_text = f"f = {fval:.2f}"
 				except Exception:
-					title_text = f"Fitness = {fval}"
-			ax.set_title(title_text, fontsize=9, pad=8)
+					title_text = f"f = {fval}"
+			ax.set_title(title_text, fontsize=12, pad=8)
 
 			xs, ys, thetas = read_final_positions(pos_path)
 			# mark best (highest fitness) which is at sim_idx == 0 (if any fitness exists)
@@ -167,8 +166,8 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 				if farr_for_sort[file_idx] != -np.inf and sim_idx == 0:
 					is_best = True
 			for i in range(min(len(xs), NUM_ROBOTS)):
-				ind_color = GREEN_COLOR if is_best else BLUE_COLOR
-				circle = Circle((xs[i], ys[i]), DIAMETER_ROBOT / 2.0, facecolor=ind_color, edgecolor=ind_color, linewidth=0.6, alpha=0.95)
+				ind_color = BLUE_COLOR if is_best else BLUE_COLOR
+				circle = Circle((xs[i], ys[i]), DIAMETER_ROBOT / 2.0, facecolor=ind_color, edgecolor='k', linewidth=0.5, alpha=0.95)
 				ax.add_patch(circle)
 		else:
 			# no mapped file for this subplot
@@ -178,7 +177,7 @@ def make_grid_for_generation(output_base: Path, generation: str, rows: int = 5, 
 	if out_dir is None:
 		out_dir = Path.cwd()
 	out_dir.mkdir(parents=True, exist_ok=True)
-	out_path = out_dir / f'snapshots_generation_{generation}.png'
+	out_path = out_dir / f'comportamento-agregacao-{generation}.png'
 	fig.savefig(out_path, dpi=fig_dpi)
 	plt.close(fig)
 	print(f"Saved snapshots for generation {generation} -> {out_path}")
@@ -189,7 +188,7 @@ def main():
 	parser = argparse.ArgumentParser(description='Generate 5x8 grids of final robot positions for specified generations')
 	parser.add_argument('--output-base', type=str, default='/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/20-10-2025 15-47-53',
 						help='Base output directory (contains generation subfolders)')
-	parser.add_argument('--generations', type=str, default='000,001,002,010,050,100',
+	parser.add_argument('--generations', type=str, default='000',
 						help='Comma separated list of generation names to plot (e.g. 000,050,100)')
 	parser.add_argument('--rows', type=int, default=8, help='Grid rows (default 8)')
 	parser.add_argument('--cols', type=int, default=5, help='Grid columns (default 5)')
