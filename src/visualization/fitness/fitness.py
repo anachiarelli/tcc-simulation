@@ -4,8 +4,8 @@ from pathlib import Path
 import numpy as np
 
 #base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/grouping/20-10-2025 15-47-53') # article aggregation
-base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33/') # article object clustering
-#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17/') # article multitask aggregation
+#base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33/') # article object clustering
+base_dir = Path('/home/anachiarelli/projects/udesc/tcc/simulation/output/sorting_groups/31-10-2025 02-14-17/') # article multitask aggregation
 
 fitnesses_by_generation = []
 
@@ -23,7 +23,7 @@ for generation in generations:
         break
     with (base_dir / generation / 'fitness.csv').open() as fitness_file:
         for row in fitness_file:
-            fitnesses.append(float(row))
+            fitnesses.append(float(row) * 100)
     fitnesses.sort()
     fitnesses_by_generation.append(fitnesses)
 
@@ -35,17 +35,19 @@ plt.figure(figsize=(10, 6))  # Adjust figure size for better visibility
 index = np.arange(len(generations))  # X-axis indices for generations
 
 # Plot lines for maximum and average fitness
-# plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Melhor fitness')
-# plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Média')
-plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Best Individual')
-plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Average Fitness')
+plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Melhor fitness')
+plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Média')
+#plt.plot(index, maximum_fitness_by_generation, marker='o', markersize=4, linestyle='-', linewidth=0.8, label='Best Individual')
+#plt.plot(index, average_fitness_by_generation, marker='s', markersize=4, linestyle='--', linewidth=0.8, label='Average Fitness')
 
 # Customize the plot
 # plt.title('Fitness por Geração')
 # plt.xlabel('Geração')
 # plt.ylabel('Fitness')
-plt.title('Fitness by Generation')
-plt.xlabel('Generation')
+plt.title('Fitness por Geração')
+#plt.title('Fitness by Generation')
+plt.xlabel('Geração')
+#plt.xlabel('Generation')
 plt.ylabel('Fitness')
 try:
     xtick_labels_all = [int(generation) for generation in generations]
@@ -69,5 +71,5 @@ plt.xlim([-0.5, max(len(generations) - 0.5, 0)])  # Adjust x-axis limits
 plt.tight_layout()  # Adjust layout to prevent label cutoff
 
 # Save and clear the plot
-plt.savefig('fitness.png')
+plt.savefig('multitask_fitness.png')
 plt.clf()

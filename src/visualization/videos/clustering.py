@@ -1,6 +1,6 @@
 import csv
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, FancyArrowPatch
+from matplotlib.patches import Circle
 import numpy as np
 import os
 from matplotlib.animation import FuncAnimation, FFMpegWriter
@@ -13,11 +13,11 @@ diameter_object = 10.0
 world_size = 112  # in cm, should match simulation setup
 generation = '000'
 
-base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/08-10-2025 21-18-58/' + generation + '/positions'
+base_dir = '/home/anachiarelli/projects/udesc/tcc/simulation/output/object_clustering/06-11-2025 01-59-33/' + generation + '/positions'
 robots_dir = base_dir + '/robots'
 objects_dir = base_dir + '/objects'
-num_simulations = 10
-rows, cols = 2, 5
+num_simulations = 40
+rows, cols = 8, 5
 
 # Video parameters
 fps = 10  # frames per second in output video
@@ -102,7 +102,7 @@ for sim_idx, ax in enumerate(axes):
     ax.set_title(str(sim_idx), fontsize=12, pad=8, loc='center')
     # placeholder lists for artists per subplot
     artists = {'robot_lines': [], 'robot_dots': [], 'robot_circles': [],
-               'object_lines': [], 'object_dots': [], 'object_circles': [], 'robot_arrows': []}
+               'object_lines': [], 'object_dots': [], 'object_circles': []}
     if sim_idx < len(robot_files):
         # create artists: path lines and Circle patches sized in cm
         for i in range(num_robots):
@@ -116,14 +116,7 @@ for sim_idx, ax in enumerate(axes):
             ax.add_patch(circle)
             artists['robot_lines'].append(line)
             artists['robot_circles'].append(circle)
-            # create a small arrow to indicate heading; initial arrow points to the right
-            # arrow length in cm (visual only)
-            # make the arrow slightly longer and use a lighter blue
-            arrow_len = diameter_robot * 1.6
-            # FancyArrowPatch uses (x, y) for start and (x2, y2) for end
-            arrow = FancyArrowPatch((0, 0), (arrow_len, 0), color=arrow_color, linewidth=1.4, arrowstyle='-|>', mutation_scale=16)
-            ax.add_patch(arrow)
-            artists['robot_arrows'].append(arrow)
+            # no heading arrow: robot is represented by its circle and path
         for i in range(num_objects):
             line, = ax.plot([], [], color='red', lw=0.8, linestyle='--', alpha=0.5)
             circle = Circle((0, 0), diameter_object / 2.0, facecolor='red', edgecolor='darkred', linewidth=1.0, alpha=0.9)
@@ -155,18 +148,6 @@ def update(frame):
                 y_last = ys[idx]
                 # update Circle center
                 artists['robot_circles'][i].center = (x_last, y_last)
-                # update arrow to point in heading direction
-                # get theta (if available) or use 0
-                if len(thetas) > idx:
-                    theta = thetas[idx]
-                else:
-                    theta = thetas[-1] if thetas else 0.0
-                # arrow length (slightly longer to be more visible)
-                arrow_len = diameter_robot * 1.0
-                dx = arrow_len * np.cos(theta)
-                dy = arrow_len * np.sin(theta)
-                # set new arrow positions: from center to (center + (dx,dy))
-                artists['robot_arrows'][i].set_positions((x_last, y_last), (x_last + dx, y_last + dy))
             # objects
             for i in range(num_objects):
                 xs = object_trajectories_x_all[sim_idx][i]
