@@ -1,4 +1,4 @@
 build
-**/output
+output
 input
-src/visualization/videos/*.mp4
+*.tgz

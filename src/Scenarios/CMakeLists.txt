@@ -1,3 +1,5 @@
 add_subdirectory(enki_minimal)
 add_subdirectory(grouping)
 add_subdirectory(object_clustering)
+add_subdirectory(sorting_groups)
+add_subdirectory(sorting_objects)

@@ -11,21 +11,7 @@ Para executar através do Docker, você precisa:
 1. Construir a imagem do projeto usando o comando `make build-image`
 1. Executar um cenário usando o comando `make run scenario=nome_do_cenario`
 
----
-
-Para executar sem utilizar o Docker, você precisará de um ambiente compatível com a configuração presente no arquivo `/Dockerfile`.
-
-Esse projeto foi desenvolvido em ambiente Ubuntu 24.04, com os seguintes pacotes instalados:
-- g++
-- build-essential
-- cmake
-- libgl1-mesa-dev
-- libboost-dev
-
-Após a instalação das dependências:
-1. Faça o _build_ do projeto: `cmake . -B build`
-1. Compile o cenário: `cd /root/simulation/build/src/scenarios/[nome_do_cenario] && make`
-1. Execute: `./build/src/scenarios/[nome_do_cenario]/[nome_do_executavel]`
+Para interromper o experimento, execute `docker ps`, copie o CONTAINER ID e execute `docker kill {CONTAINER ID}`.
 
 ---
 

@@ -20,7 +20,7 @@ public:
         generator = std::mt19937(rand_dev());
     }
     
-    void run() {
+    individual_type run() {
         population_type population = this->createInitialPopulation();
         std::cout << "Initial population created." << std::endl;
         // for (const auto& individual : population) {
@@ -33,7 +33,9 @@ public:
             std::cout << population[i] << " Fitness: " << fitnesses[i] << std::endl;
         }
 
-        for (int i = 1; i <= 100; i++) {
+        int num_generations = 100;
+        // Clustering: Each evolution was run for 1000 generations. (GAUCI)
+        for (int i = 1; i <= num_generations; i++) {
             population = this->createNextPopulation(population, fitnesses);
             fitnesses = this->evaluatePopulation(population, i);
             // Print fitnesses for debugging
@@ -41,6 +43,14 @@ public:
                 std::cout << i << " " << population[j] << " Fitness: " << fitnesses[j] << std::endl;
             }
         }
+
+        int best_index = 0;
+        for (int i = 0; i < fitnesses.size(); ++i) {
+            if (fitnesses[best_index] < fitnesses[i]) {
+                best_index = i;
+            }
+        }
+        return population[best_index];
     }
 
 private:
@@ -66,29 +76,7 @@ private:
     }
 
     std::vector<double> evaluatePopulation(population_type population, int generation) {
-        std::vector<double> fitnesses;
-
-        std::string generation_str = std::to_string(generation);
-        generation_str = std::string(3 - generation_str.length(), '0') + generation_str;
-        std::string output_dir = "/root/simulation/output/current/" + generation_str;
-
-        std::filesystem::create_directories(output_dir);
-        std::ofstream fitness_file(output_dir + "/fitness.txt");
-        if (!fitness_file.is_open()) {
-            std::cerr << "Unable to open fitness file: " << output_dir + "/fitness.txt" << std::endl;
-            exit(-1);
-        }
-
-        for (int i = 0; i < population.size(); ++i) {
-            std::cout << "Evaluating individual " << i << " of generation " << generation << std::endl;
-            double fitness = this->evaluator.evaluateFitness(population[i], i, generation);
-            fitnesses.push_back(fitness);
-
-            fitness_file << fitness << std::endl;
-            std::cout << "Individual " << i << " fitness: " << fitness << std::endl;
-        }
-
-        return fitnesses;
+        return this->evaluator.evaluatePopulation(population, generation);
     }
 
     population_type createNextPopulation(population_type current_population, std::vector<double> evaluation_result) {
@@ -103,7 +91,10 @@ private:
             evaluation_sum += evaluation_result[i];
         }
 
-        next_population.push_back(current_population[best_index]); // elitism
+        // Elitism -> Carry over the best individual
+        next_population.push_back(current_population[best_index]);
+
+
         for (int i = 0; i < current_population.size() - 1; ++i) {
             individual_type parent_1 = this->selectParent(current_population, evaluation_result, evaluation_sum);
             individual_type parent_2 = this->selectParent(current_population, evaluation_result, evaluation_sum);
@@ -150,7 +141,7 @@ private:
     }
 
     individual_type mutate(const individual_type& child) {
-        double chance = 0.001;
+        double chance = 0.0075;
         
         std::uniform_real_distribution<double> distr(0, 1);
         individual_type mutated_child = child;
